@@ -29,6 +29,7 @@ from service.models import db, Promotion
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
 )
+BASE_URL = "/promotions"
 
 
 ######################################################################
@@ -71,5 +72,9 @@ class TestYourResourceService(TestCase):
         """It should call the home page"""
         resp = self.client.get("/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(data["service_name"], "Promotion Service")
+        self.assertEqual(data["version"], "v1.0")
+        self.assertEqual(data["endpoint"], "/promotions")
 
     # Todo: Add your test cases here...
