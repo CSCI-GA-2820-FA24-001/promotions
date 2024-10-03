@@ -1,11 +1,15 @@
 """
-Models for YourResourceModel
+Models for Promotion
 
 All of the models are stored in this module
 """
 
 import logging
+import uuid
+from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.postgresql import UUID, JSONB  # Import JSONB for PostgreSQL
+
 
 logger = logging.getLogger("flask.app")
 
@@ -17,25 +21,56 @@ class DataValidationError(Exception):
     """Used for an data validation errors when deserializing"""
 
 
-class YourResourceModel(db.Model):
+class Promotion(db.Model):
     """
-    Class that represents a YourResourceModel
+    Represents a promotion for products, including details like name, start and end dates,
+    and additional metadata.
+
+    Attributes:
+        id (UUID, required): A unique identifier for the promotion, generated automatically as a UUID.
+        product_ids (JSONB, optional): A list of product IDs associated with the promotion, stored as a JSON array.
+        name (str, required): The name of the promotion.
+        description (str, optional): A detailed description of the promotion.
+        start_date (datetime, required): The start date and time of the promotion.
+        end_date (datetime, required): The end date and time of the promotion.
+        active_status (bool, required): A boolean indicating whether the promotion is active.
+        created_by (UUID, required): The UUID of the user who created the promotion.
+        updated_by (UUID, required): The UUID of the user who last updated the promotion.
+        created_at (datetime, required): The timestamp when the promotion was created, default set to the current UTC time.
+        updated_at (datetime, required): The timestamp when the promotion was last updated.
+        extra (JSONB, optional): Additional metadata for the promotion, stored as a JSON object.
     """
 
     ##################################################
     # Table Schema
     ##################################################
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(63))
 
-    # Todo: Place the rest of your schema here...
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    product_ids = db.Column(JSONB, nullable=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    start_date = db.Column(db.DateTime, nullable=False)
+    end_date = db.Column(db.DateTime, nullable=False)
+    active_status = db.Column(db.Boolean, nullable=False)
+    created_by = db.Column(UUID(as_uuid=True), nullable=False)
+    updated_by = db.Column(UUID(as_uuid=True), nullable=False)
+    created_at = db.Column(
+        db.DateTime, nullable=False, default=datetime.now(timezone.utc)
+    )
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.now(timezone.utc),
+        onupdate=datetime.now(timezone.utc),
+    )
+    extra = db.Column(JSONB)
 
     def __repr__(self):
-        return f"<YourResourceModel {self.name} id=[{self.id}]>"
+        return f"<Promotion {self.name} id=[{self.id}]>"
 
     def create(self):
         """
-        Creates a YourResourceModel to the database
+        Creates a Promotion to the database
         """
         logger.info("Creating %s", self.name)
         self.id = None  # pylint: disable=invalid-name
@@ -49,7 +84,7 @@ class YourResourceModel(db.Model):
 
     def update(self):
         """
-        Updates a YourResourceModel to the database
+        Updates a Promotion to the database
         """
         logger.info("Saving %s", self.name)
         try:
@@ -60,7 +95,7 @@ class YourResourceModel(db.Model):
             raise DataValidationError(e) from e
 
     def delete(self):
-        """Removes a YourResourceModel from the data store"""
+        """Removes a Promotion from the data store"""
         logger.info("Deleting %s", self.name)
         try:
             db.session.delete(self)
@@ -71,27 +106,52 @@ class YourResourceModel(db.Model):
             raise DataValidationError(e) from e
 
     def serialize(self):
-        """Serializes a YourResourceModel into a dictionary"""
-        return {"id": self.id, "name": self.name}
+        """Serializes a Promotion into a dictionary"""
+        return {
+            "id": str(self.id),  # UUID to string
+            "product_ids": self.product_ids,
+            "name": self.name,
+            "description": self.description,
+            "start_date": self.start_date.isoformat(),
+            "end_date": self.end_date.isoformat(),
+            "active_status": self.active_status,
+            "created_by": str(self.created_by),
+            "updated_by": str(self.updated_by),
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+            "extra": self.extra,
+        }
 
     def deserialize(self, data):
         """
-        Deserializes a YourResourceModel from a dictionary
+        Deserializes a Promotion from a dictionary
 
         Args:
             data (dict): A dictionary containing the resource data
         """
         try:
+            # Required fields
             self.name = data["name"]
+            self.start_date = datetime.fromisoformat(data["start_date"])
+            self.end_date = datetime.fromisoformat(data["end_date"])
+            self.active_status = data["active_status"]
+            self.created_by = uuid.UUID(data["created_by"])  # Convert string to UUID
+            self.updated_by = uuid.UUID(data["updated_by"])  # Convert string to UUID
+
+            # Optional fields (use `.get()` to avoid KeyError if not present)
+            self.product_ids = data.get("product_ids")
+            self.description = data.get("description")
+            self.extra = data.get("extra")
+
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:
             raise DataValidationError(
-                "Invalid YourResourceModel: missing " + error.args[0]
+                "Invalid Promotion: missing " + error.args[0]
             ) from error
         except TypeError as error:
             raise DataValidationError(
-                "Invalid YourResourceModel: body of request contained bad or no data "
+                "Invalid Promotion: body of request contained bad or no data "
                 + str(error)
             ) from error
         return self
@@ -102,22 +162,22 @@ class YourResourceModel(db.Model):
 
     @classmethod
     def all(cls):
-        """Returns all of the YourResourceModels in the database"""
-        logger.info("Processing all YourResourceModels")
+        """Returns all of the Promotions in the database"""
+        logger.info("Processing all Promotions")
         return cls.query.all()
 
     @classmethod
     def find(cls, by_id):
-        """Finds a YourResourceModel by it's ID"""
+        """Finds a Promotion by it's ID"""
         logger.info("Processing lookup for id %s ...", by_id)
         return cls.query.session.get(cls, by_id)
 
     @classmethod
     def find_by_name(cls, name):
-        """Returns all YourResourceModels with the given name
+        """Returns all Promotions with the given name
 
         Args:
-            name (string): the name of the YourResourceModels you want to match
+            name (string): the name of the Promotions you want to match
         """
         logger.info("Processing name query for %s ...", name)
         return cls.query.filter(cls.name == name)
