@@ -33,8 +33,13 @@ from service.common import status  # HTTP Status Codes
 @app.route("/")
 def index():
     """Root URL response"""
+    promotion_metadata = {
+        "service_name": "Promotion Service",
+        "version": "v1.0",
+        "endpoint": "/promotions"
+    }
     return (
-        "Reminder: return some useful information in json format about the service here",
+        promotion_metadata,
         status.HTTP_200_OK,
     )
 
