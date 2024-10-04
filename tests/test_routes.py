@@ -22,20 +22,23 @@ TestPromotion API Service Test Suite
 import os
 import logging
 from unittest import TestCase
+from datetime import datetime, timezone
 from wsgi import app
 from service.common import status
 from service.models import db, Promotion
+from .factories import PromotionFactory
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
 )
+BASE_URL = "/promotions"
 
 
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
 # pylint: disable=too-many-public-methods
-class TestYourResourceService(TestCase):
+class TestPromotionResourceService(TestCase):
     """REST API Server Tests"""
 
     @classmethod
@@ -63,6 +66,25 @@ class TestYourResourceService(TestCase):
         """This runs after each test"""
         db.session.remove()
 
+    ############################################################
+    # Utility function to bulk create promotions
+    ############################################################
+    def _create_promotions(self, count: int = 1) -> list:
+        """Factory method to create promotions in bulk"""
+        promotions = []
+        for _ in range(count):
+            test_promotion = PromotionFactory()
+            response = self.client.post(BASE_URL, json=test_promotion.serialize())
+            self.assertEqual(
+                response.status_code,
+                status.HTTP_201_CREATED,
+                "Could not create test promotion",
+            )
+            new_promotion = response.get_json()
+            test_promotion.id = new_promotion["id"]
+            promotions.append(test_promotion)
+        return promotions
+
     ######################################################################
     #  P L A C E   T E S T   C A S E S   H E R E
     ######################################################################
@@ -72,4 +94,91 @@ class TestYourResourceService(TestCase):
         resp = self.client.get("/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
-    # Todo: Add your test cases here...
+    # ----------------------------------------------------------
+    # TEST READ
+    # ----------------------------------------------------------
+    def test_get_promotion(self):
+        """It should Get a single Promotion"""
+        # get the id of a promotion
+        test_promotion = self._create_promotions(1)[0]
+        print("xxxxxx", f"{BASE_URL}/{test_promotion.id}")
+        response = self.client.get(f"{BASE_URL}/{test_promotion.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["name"], test_promotion.name)
+
+    def test_get_promotion_not_found(self):
+        """It should not Get a Promotion thats not found"""
+        response = self.client.get(f"{BASE_URL}/0")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        data = response.get_json()
+        logging.debug("Response data = %s", data)
+        self.assertIn("was not found", data["message"])
+
+    # ----------------------------------------------------------
+    # TEST CREATE
+    # ----------------------------------------------------------
+    def test_create_promotion(self):
+        """It should Create a new Promotion"""
+        test_promotion = PromotionFactory()
+        logging.debug("Test Promotion: %s", test_promotion.serialize())
+        response = self.client.post(BASE_URL, json=test_promotion.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Make sure location header is set
+        location = response.headers.get("Location", None)
+        self.assertIsNotNone(location)
+
+        # Check the data is correct
+        new_promotion = response.get_json()
+        self.assertEqual(new_promotion["name"], test_promotion.name)
+        self.assertEqual(new_promotion["description"], test_promotion.description)
+        self.assertEqual(
+            datetime.fromisoformat(new_promotion["start_date"]).replace(
+                tzinfo=timezone.utc
+            ),
+            test_promotion.start_date,
+        )
+        self.assertEqual(
+            datetime.fromisoformat(new_promotion["end_date"]).replace(
+                tzinfo=timezone.utc
+            ),
+            test_promotion.end_date,
+        )
+        self.assertEqual(new_promotion["active_status"], test_promotion.active_status)
+        self.assertEqual(new_promotion["created_by"], test_promotion.created_by)
+        self.assertEqual(new_promotion["updated_by"], test_promotion.updated_by)
+        self.assertEqual(new_promotion["product_ids"], test_promotion.product_ids)
+        self.assertEqual(
+            new_promotion["extra"]["promotion_type"],
+            test_promotion.extra["promotion_type"],
+        )
+        self.assertEqual(new_promotion["extra"]["value"], test_promotion.extra["value"])
+
+        # Check that the location header was correct
+        response = self.client.get(location)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        new_promotion = response.get_json()
+        self.assertEqual(new_promotion["name"], test_promotion.name)
+        self.assertEqual(new_promotion["description"], test_promotion.description)
+        self.assertEqual(
+            datetime.fromisoformat(new_promotion["start_date"]).replace(
+                tzinfo=timezone.utc
+            ),
+            test_promotion.start_date,
+        )
+        self.assertEqual(
+            datetime.fromisoformat(new_promotion["end_date"]).replace(
+                tzinfo=timezone.utc
+            ),
+            test_promotion.end_date,
+        )
+        self.assertEqual(new_promotion["active_status"], test_promotion.active_status)
+        self.assertEqual(new_promotion["created_by"], test_promotion.created_by)
+        self.assertEqual(new_promotion["updated_by"], test_promotion.updated_by)
+        self.assertEqual(new_promotion["product_ids"], test_promotion.product_ids)
+        self.assertEqual(
+            new_promotion["extra"]["promotion_type"],
+            test_promotion.extra["promotion_type"],
+        )
+        self.assertEqual(new_promotion["extra"]["value"], test_promotion.extra["value"])
