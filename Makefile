@@ -39,6 +39,7 @@ lint: ## Run the linter
 .PHONY: test
 test: ## Run the unit tests
 	$(info Running tests...)
+	flask db-create
 	pytest --pspec --cov=service --cov-fail-under=95
 
 ##@ Runtime
