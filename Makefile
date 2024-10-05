@@ -1,5 +1,6 @@
 # These can be overidden with env vars.
 CLUSTER ?= nyu-devops
+ENV ?= local  # Set the default environment to 'local'
 
 .SILENT:
 
@@ -39,7 +40,12 @@ lint: ## Run the linter
 .PHONY: test
 test: ## Run the unit tests
 	$(info Running tests...)
-	flask db-create
+	@if [ "$(ENV)" != "production" ]; then \
+		echo "Running db-create in $(ENV) environment..."; \
+		flask db-create; \
+	else \
+		echo "Skipping db-create in production environment."; \
+	fi
 	pytest --pspec --cov=service --cov-fail-under=95
 
 ##@ Runtime
