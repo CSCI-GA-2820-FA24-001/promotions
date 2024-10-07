@@ -22,6 +22,7 @@ TestPromotion API Service Test Suite
 import os
 import logging
 from unittest import TestCase
+from uuid import uuid4
 from datetime import datetime, timezone
 from wsgi import app
 from service.common import status
@@ -186,3 +187,23 @@ class TestPromotionResourceService(TestCase):
             test_promotion.extra["promotion_type"],
         )
         self.assertEqual(new_promotion["extra"]["value"], test_promotion.extra["value"])
+
+    # ----------------------------------------------------------
+    # TEST DELETE
+    # ----------------------------------------------------------
+    def test_delete_promotion(self):
+        """It should Delete a Promotion"""
+        test_promotion = self._create_promotions(1)[0]
+        response = self.client.delete(f"{BASE_URL}/{test_promotion.id}")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(len(response.data), 0)
+        # make sure they are deleted
+        response = self.client.get(f"{BASE_URL}/{test_promotion.id}")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_non_existing_promotion(self):
+        """It should Delete a Promotion even if it doesn't exist"""
+        non_existent_id = uuid4()  # Generate a random UUID
+        response = self.client.delete(f"{BASE_URL}/{non_existent_id}")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(len(response.data), 0)
