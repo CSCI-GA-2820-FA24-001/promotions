@@ -9,6 +9,12 @@ This is a skeleton you can use to start your projects
 
 This project template contains starter code for your class project. The `/service` folder contains your `models.py` file for your model and a `routes.py` file for your service. The `/tests` folder has test case starter code for testing the model and the service separately. All you need to do is add your functionality. You can use the [lab-flask-tdd](https://github.com/nyu-devops/lab-flask-tdd) for code examples to copy from.
 
+## Introduction
+
+The Promotions microservice is part of an eCommerce backend project designed to provide RESTful services for managing product promotions. This service allows you to create, read, update, delete, and list promotions, supporting a full CRUD lifecycle. The microservice also exposes metadata about itself at the root endpoint `(/)`.
+
+**Note:** The base service code is contained in `routes.py` while the business logic for manipulating Promotions is in the `models.py` file. This follows the popular Model View Controller (MVC) separation of duties by keeping the model separate from the controller. As such, we have two test suites: one for the model (`test_models.py`) and one for the service itself (`test_routes.py`)
+
 ## Automatic Setup
 
 The best way to use this repo is to start your own repo using it as a git template. To do this just press the green **Use this template** button in GitHub and this will become the source for your repository.
@@ -57,6 +63,100 @@ tests/                     - test cases package
 ├── test_models.py         - test suite for business models
 └── test_routes.py         - test suite for service routes
 ```
+
+## API Endpoints
+
+### Create a Promotion
+
+- **Method**: `POST`
+- **Description**: Creates a new promotion.
+-   **Response**: Returns the created promotion with a unique `promotion_id`.
+
+### Read a Promotion
+
+-   **Method**: `GET`
+-   **Description**: Retrieves details of a specific promotion by its ID.
+- **Response**: Returns the detailed information about the specific promotion being requested.
+### Update a Promotion
+
+-   **URL**: `/promotions/<promotion_id>`
+-   **Method**: `PUT`
+-   **Description**: Updates an existing promotion.
+-   **Response**: Returns the updated promotion details.
+
+### Delete a Promotion
+
+-   **URL**: `/promotions/<promotion_id>`
+-   **Method**: `DELETE`
+-   **Description**: Deletes a promotion by its ID.
+-   **Response**: Returns a success message.
+
+### List Promotions
+
+-   **URL**: `/promotions`
+-   **Method**: `GET`
+-   **Description**: Lists all existing promotions.
+-   **Response**: Returns an array of promotion objects.
+
+## Running the tests
+
+As developers we always want to run the tests before we change any code. That way we know if we broke the code or if someone before us did. Always run the test cases first!
+
+Run the unit tests using `pytest`
+
+```shell
+make test
+```
+
+PyTest is configured via the included `setup.cfg` file to automatically include the `--pspec` flag so that red-green-refactor is meaningful. If you are in a command shell that supports colors, passing tests will be green while failing tests will be red.
+
+PyTest is also configured to automatically run the `coverage` tool and you should see a percentage-of-coverage report at the end of your tests. If you want to see what lines of code were not tested use:
+
+```shell
+coverage report -m
+```
+
+This is particularly useful because it reports the line numbers for the code that have not been covered so you know which lines you want to target with new test cases to get higher code coverage.
+
+You can also manually run `pytest` with `coverage` (but settings in `pyporojrct.toml` do this already)
+
+```shell
+$ pytest --pspec --cov=service --cov-fail-under=95
+```
+
+Try and get as close to 100% coverage as you can.
+
+It's also a good idea to make sure that your Python code follows the PEP8 standard. Both `flake8` and `pylint` have been included in the `pyproject.toml` file so that you can check if your code is compliant like this:
+
+```shell
+make lint
+```
+
+Which does the equivalent of these commands:
+
+```shell
+flake8 service tests --count --select=E9,F63,F7,F82 --show-source --statistics
+flake8 service tests --count --max-complexity=10 --max-line-length=127 --statistics
+pylint service tests --max-line-length=127
+```
+
+Visual Studio Code is configured to use `pylint` while you are editing. This catches a lot of errors while you code that would normally be caught at runtime. It's a good idea to always code with pylint active.
+
+## Running the service
+
+The project uses `honcho` which gets it's commands from the `Procfile`. To start the service simply use:
+
+```shell
+honcho start
+```
+
+As a convenience you can aso use:
+
+```shell
+make run
+```
+
+You should be able to reach the service at: http://localhost:8000. The port that is used is controlled by an environment variable defined in the `.flaskenv` file which Flask uses to load it's configuration from the environment by default.
 
 ## License
 
