@@ -27,6 +27,7 @@ from wsgi import app
 from service.common import status
 from service.models import db, Promotion
 from .factories import PromotionFactory
+import uuid 
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
@@ -186,3 +187,44 @@ class TestPromotionResourceService(TestCase):
             test_promotion.extra["promotion_type"],
         )
         self.assertEqual(new_promotion["extra"]["value"], test_promotion.extra["value"])
+
+    def test_update_promotion(self):
+        """It should update an existing promotion"""
+        test_promotion = self._create_promotions(1)[0]
+
+        updated_data = {
+            "name": "Updated Promotion Name",
+            "description": "Updated description",
+            "start_date": test_promotion.start_date.isoformat(),
+            "end_date": test_promotion.end_date.isoformat(),
+            "active_status": not test_promotion.active_status,  # Flip the active status
+            "created_by": test_promotion.created_by,
+            "updated_by": str(uuid.uuid4()),
+            "product_ids": test_promotion.product_ids,
+            "extra": {
+                "promotion_type": "percentage",
+                "value": 15
+            }
+        }
+
+        response = self.client.put(f"{BASE_URL}/{test_promotion.id}", json=updated_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        updated_promotion = response.get_json()
+
+        self.assertEqual(updated_promotion["name"], updated_data["name"])
+        self.assertEqual(updated_promotion["description"], updated_data["description"])
+        self.assertEqual(
+            datetime.fromisoformat(updated_promotion["start_date"]).replace(tzinfo=timezone.utc),
+            test_promotion.start_date
+        )
+        self.assertEqual(
+            datetime.fromisoformat(updated_promotion["end_date"]).replace(tzinfo=timezone.utc),
+            test_promotion.end_date
+        )
+        self.assertEqual(updated_promotion["active_status"], updated_data["active_status"])
+        self.assertEqual(updated_promotion["created_by"], updated_data["created_by"])
+        self.assertEqual(updated_promotion["updated_by"], updated_data["updated_by"])
+        self.assertEqual(updated_promotion["product_ids"], updated_data["product_ids"])
+        self.assertEqual(updated_promotion["extra"]["promotion_type"], updated_data["extra"]["promotion_type"])
+        self.assertEqual(updated_promotion["extra"]["value"], updated_data["extra"]["value"])
