@@ -37,7 +37,7 @@ def index():
     promotion_metadata = {
         "service_name": "Promotion Service",
         "version": "v1.0",
-        "endpoint": "/promotions"
+        "endpoint": "/promotions",
     }
     return (
         promotion_metadata,
@@ -108,6 +108,28 @@ def create_promotions():
         status.HTTP_201_CREATED,
         {"Location": location_url},
     )
+
+
+######################################################################
+# DELETE A PROMOTION
+######################################################################
+@app.route("/promotions/<uuid:promotion_id>", methods=["DELETE"])
+def delete_promotions(promotion_id):
+    """
+    Delete a Promotion
+
+    This endpoint will delete a Promotion based the id specified in the path
+    """
+    app.logger.info("Request to Delete a promotion with id [%s]", promotion_id)
+
+    # Delete the Promotion if it exists
+    promotion = Promotion.find(promotion_id)
+    if promotion:
+        app.logger.info("Promotion with ID: %d found.", promotion.id)
+        promotion.delete()
+
+    app.logger.info("Promotion with ID: %d delete complete.", promotion_id)
+    return {}, status.HTTP_204_NO_CONTENT
 
 
 ######################################################################
