@@ -109,9 +109,12 @@ def create_promotions():
         {"Location": location_url},
     )
 
+
 ######################################################################
 # UPDATE PROMOTION
 ######################################################################
+
+
 @app.route("/promotions/<string:promotion_id>", methods=["PUT"])
 def update_promotion(promotion_id):
     """
@@ -140,9 +143,12 @@ def update_promotion(promotion_id):
 
     return jsonify(promotion.serialize()), status.HTTP_200_OK
 
+
 ######################################################################
 # DELETE A PROMOTION
 ######################################################################
+
+
 @app.route("/promotions/<uuid:promotion_id>", methods=["DELETE"])
 def delete_promotions(promotion_id):
     """
@@ -160,6 +166,24 @@ def delete_promotions(promotion_id):
 
     app.logger.info("Promotion with ID: %d delete complete.", promotion_id)
     return {}, status.HTTP_204_NO_CONTENT
+
+
+######################################################################
+# LIST ALL PROMOTIONS
+######################################################################
+
+
+@app.route("/promotions", methods=["GET"])
+def list_promotions():
+    """
+    List all promotions
+
+    This endpoint will list all promotions stored in the DB
+    """
+    app.logger.info("List all promotions")
+    promos = Promotion.query.all()
+    result = [promotion.serialize() for promotion in promos]
+    return jsonify(result), status.HTTP_200_OK
 
 
 ######################################################################

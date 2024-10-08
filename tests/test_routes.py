@@ -28,7 +28,7 @@ from wsgi import app
 from service.common import status
 from service.models import db, Promotion
 from .factories import PromotionFactory
-import uuid 
+import uuid
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
@@ -189,7 +189,9 @@ class TestPromotionResourceService(TestCase):
         )
         self.assertEqual(new_promotion["extra"]["value"], test_promotion.extra["value"])
 
-
+    # ----------------------------------------------------------
+    # TEST UPDATE
+    # ----------------------------------------------------------
     def test_update_promotion(self):
         """It should update an existing promotion"""
         test_promotion = self._create_promotions(1)[0]
@@ -203,10 +205,7 @@ class TestPromotionResourceService(TestCase):
             "created_by": test_promotion.created_by,
             "updated_by": str(uuid.uuid4()),
             "product_ids": test_promotion.product_ids,
-            "extra": {
-                "promotion_type": "percentage",
-                "value": 15
-            }
+            "extra": {"promotion_type": "percentage", "value": 15},
         }
 
         response = self.client.put(f"{BASE_URL}/{test_promotion.id}", json=updated_data)
@@ -217,19 +216,30 @@ class TestPromotionResourceService(TestCase):
         self.assertEqual(updated_promotion["name"], updated_data["name"])
         self.assertEqual(updated_promotion["description"], updated_data["description"])
         self.assertEqual(
-            datetime.fromisoformat(updated_promotion["start_date"]).replace(tzinfo=timezone.utc),
-            test_promotion.start_date
+            datetime.fromisoformat(updated_promotion["start_date"]).replace(
+                tzinfo=timezone.utc
+            ),
+            test_promotion.start_date,
         )
         self.assertEqual(
-            datetime.fromisoformat(updated_promotion["end_date"]).replace(tzinfo=timezone.utc),
-            test_promotion.end_date
+            datetime.fromisoformat(updated_promotion["end_date"]).replace(
+                tzinfo=timezone.utc
+            ),
+            test_promotion.end_date,
         )
-        self.assertEqual(updated_promotion["active_status"], updated_data["active_status"])
+        self.assertEqual(
+            updated_promotion["active_status"], updated_data["active_status"]
+        )
         self.assertEqual(updated_promotion["created_by"], updated_data["created_by"])
         self.assertEqual(updated_promotion["updated_by"], updated_data["updated_by"])
         self.assertEqual(updated_promotion["product_ids"], updated_data["product_ids"])
-        self.assertEqual(updated_promotion["extra"]["promotion_type"], updated_data["extra"]["promotion_type"])
-        self.assertEqual(updated_promotion["extra"]["value"], updated_data["extra"]["value"])
+        self.assertEqual(
+            updated_promotion["extra"]["promotion_type"],
+            updated_data["extra"]["promotion_type"],
+        )
+        self.assertEqual(
+            updated_promotion["extra"]["value"], updated_data["extra"]["value"]
+        )
 
     # ----------------------------------------------------------
     # TEST DELETE
@@ -251,3 +261,40 @@ class TestPromotionResourceService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
 
+    # ----------------------------------------------------------
+    # TEST LIST
+    # ----------------------------------------------------------
+    def test_list_promotions(self):
+        """It should list all promotions"""
+        test_list_promos = self._create_promotions(2)
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.get_json()
+        self.assertEqual(
+            len(data), len(test_list_promos)
+        )  # check first if number of promos equal the number stored in the DB
+
+        for i, promo in enumerate(test_list_promos):
+            self.assertEqual(data[i]["name"], promo.name)
+            self.assertEqual(data[i]["description"], promo.description)
+            self.assertEqual(
+                datetime.fromisoformat(data[i]["start_date"]).replace(
+                    tzinfo=timezone.utc
+                ),
+                promo.start_date,
+            )
+            self.assertEqual(
+                datetime.fromisoformat(data[i]["end_date"]).replace(
+                    tzinfo=timezone.utc
+                ),
+                promo.end_date,
+            )
+            self.assertEqual(data[i]["active_status"], promo.active_status)
+            self.assertEqual(data[i]["created_by"], promo.created_by)
+            self.assertEqual(data[i]["updated_by"], promo.updated_by)
+            self.assertEqual(data[i]["product_ids"], promo.product_ids)
+            self.assertEqual(
+                data[i]["extra"]["promotion_type"], promo.extra["promotion_type"]
+            )
+            self.assertEqual(data[i]["extra"]["value"], promo.extra["value"])
