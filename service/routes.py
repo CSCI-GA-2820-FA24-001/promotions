@@ -109,6 +109,36 @@ def create_promotions():
         {"Location": location_url},
     )
 
+######################################################################
+# UPDATE PROMOTION
+######################################################################
+@app.route("/promotions/<string:promotion_id>", methods=["PUT"])
+def update_promotion(promotion_id):
+    """
+    Update an existing Promotion
+
+    This endpoint will update a Promotion based on the provided data
+    """
+    app.logger.info(f"Request to update promotion with id: {promotion_id}")
+    promotion = Promotion.find(promotion_id)
+    if not promotion:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Promotion with id '{promotion_id}' was not found.",
+        )
+
+    data = request.get_json()
+    app.logger.info(f"Processing update with data: {data}")
+
+    try:
+        promotion.deserialize(data)
+    except KeyError as error:
+        abort(status.HTTP_400_BAD_REQUEST, f"Invalid promotion data: {error}")
+
+    promotion.update()
+    app.logger.info(f"Promotion with ID [{promotion_id}] updated successfully.")
+
+    return jsonify(promotion.serialize()), status.HTTP_200_OK
 
 ######################################################################
 # DELETE A PROMOTION
