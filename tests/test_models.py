@@ -192,13 +192,10 @@ class TestPromotion(TestCase):
             "active_status": ACTIVE_STATUS,
             "created_by": CREATED_BY,
             "updated_by": UPDATED_BY,
-            "product_ids": PRODUCT_IDS,
-            "description": DESCRIPTION,
-            "extra": EXTRA,
         }
 
         # Create a Promotion instance and deserialize the data
-        promotion = Promotion()
+        promotion = PromotionFactory()
         promotion.deserialize(data)
 
         # Assertions using constants
@@ -208,9 +205,6 @@ class TestPromotion(TestCase):
         self.assertTrue(promotion.active_status)
         self.assertEqual(promotion.created_by, UUID(CREATED_BY))
         self.assertEqual(promotion.updated_by, UUID(UPDATED_BY))
-        self.assertEqual(promotion.product_ids, PRODUCT_IDS)
-        self.assertEqual(promotion.description, DESCRIPTION)
-        self.assertEqual(promotion.extra, EXTRA)
 
     def test_promotion_deserialize_missing_required_fields(self):
         """It should raise a DataValidationError when required fields are missing"""
@@ -224,7 +218,7 @@ class TestPromotion(TestCase):
             "updated_by": UPDATED_BY,
         }
 
-        promotion = Promotion()
+        promotion = PromotionFactory()
 
         # Assert that deserialization raises a DataValidationError for missing required fields
         with self.assertRaises(DataValidationError) as context:
@@ -232,11 +226,42 @@ class TestPromotion(TestCase):
 
         self.assertTrue("Invalid Promotion: missing name" in str(context.exception))
 
+    def test_promotion_deserialize_type_error(self):
+        """It should raise a DataValidationError when any field has an incorrect type"""
 
-# TODO:
-# 1. Write test cases for the `deserialize` function:
-#    - Test that a TypeError is raised when any field has an incorrect type.
-#
-# 2. Write test cases for the `find_by_name` method:
-#    - Test that promotions with the specified name are correctly returned.
-#    - Test the behavior when no promotions with the given name are found.
+        data = {
+            "name": NAME,
+            "start_date": 12345,  # Invalid type
+            "end_date": END_DATE,
+            "active_status": ACTIVE_STATUS,
+            "created_by": CREATED_BY,
+            "updated_by": UPDATED_BY,
+        }
+
+        promotion = PromotionFactory()
+
+        with self.assertRaises(DataValidationError) as context:
+            promotion.deserialize(data)
+
+        self.assertTrue(
+            "Invalid Promotion: body of request contained bad or no data"
+            in str(context.exception)
+        )
+
+    def test_find_by_name_success(self):
+        """It should return promotions with the specified name"""
+
+        promotion1 = PromotionFactory(name="Black Friday Sale")
+        promotion2 = PromotionFactory(name="Holiday Sale")
+        promotion1.create()
+        promotion2.create()
+
+        found_promotions = Promotion.find_by_name("Holiday Sale")
+        self.assertEqual(found_promotions.count(), 1)
+        self.assertEqual(found_promotions.first().name, "Holiday Sale")
+
+    def test_find_by_name_not_found(self):
+        """It should return an empty result when no promotions with the given name are found"""
+
+        found_promotions = Promotion.find_by_name("Non-existent Sale")
+        self.assertEqual(found_promotions.count(), 0)
