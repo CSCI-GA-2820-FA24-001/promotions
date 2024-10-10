@@ -130,7 +130,6 @@ class Promotion(db.Model):
             data (dict): A dictionary containing the resource data
         """
         try:
-            # Required fields
             self.name = data["name"]
             self.start_date = datetime.fromisoformat(data["start_date"])
             self.end_date = datetime.fromisoformat(data["end_date"])
@@ -143,8 +142,10 @@ class Promotion(db.Model):
             self.description = data.get("description")
             self.extra = data.get("extra")
 
-        except AttributeError as error:
-            raise DataValidationError("Invalid attribute: " + error.args[0]) from error
+        # AttributeError is unlikely in the current implementation
+        # but might be needed in future if attribute access or method calls are added.
+        # except AttributeError as error:
+        #     raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:
             raise DataValidationError(
                 "Invalid Promotion: missing " + error.args[0]
