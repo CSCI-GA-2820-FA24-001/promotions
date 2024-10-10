@@ -66,11 +66,37 @@ tests/                     - test cases package
 
 ## API Endpoints
 
+### Root Route (`/`)
+
+#### Description
+
+The root route provides metadata and basic information about the Promotion Service, such as its name, version, and the main endpoint. It serves as an entry point to verify that the API is accessible. This route can be used as a simple health check to ensure that the service is running properly.
+
+#### HTTP Method
+
+-   `GET`
+
+#### Example Request
+
+`GET /` 
+
+#### Response
+
+-   **Status Code**: `200 OK`
+-   **Content Type**: `application/json`
+-   **Response Body**:
+ 
+    `{
+      "service_name": "Promotion Service",
+      "version": "v1.0",
+      "endpoint": "/promotions"
+    }` 
+
 ### Create a Promotion
 
 - **Method**: `POST`
 - **Description**: Creates a new promotion.
--   **Response**: Returns the created promotion with a unique `promotion_id`.
+-   **Response**: Returns the created promotion details with a unique promotion ID.
 
 ### Read a Promotion
 
@@ -79,24 +105,22 @@ tests/                     - test cases package
 - **Response**: Returns the detailed information about the specific promotion being requested.
 ### Update a Promotion
 
--   **URL**: `/promotions/<promotion_id>`
 -   **Method**: `PUT`
 -   **Description**: Updates an existing promotion.
 -   **Response**: Returns the updated promotion details.
 
 ### Delete a Promotion
 
--   **URL**: `/promotions/<promotion_id>`
 -   **Method**: `DELETE`
 -   **Description**: Deletes a promotion by its ID.
 -   **Response**: Returns a success message.
 
 ### List Promotions
 
--   **URL**: `/promotions`
 -   **Method**: `GET`
 -   **Description**: Lists all existing promotions.
 -   **Response**: Returns an array of promotion objects.
+
 
 ## Running the tests
 
