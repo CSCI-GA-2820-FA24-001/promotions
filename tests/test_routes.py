@@ -190,6 +190,20 @@ class TestPromotionResourceService(TestCase):
         self.assertEqual(new_promotion["extra"]["value"], test_promotion.extra["value"])
 
     # ----------------------------------------------------------
+    # TEST CREATE WITH 415 WRONG HEADERS
+    # ----------------------------------------------------------
+    def test_create_promotion_with_wrong_headers(self):
+        """It should raise a 415 unsupported media type error"""
+        test_promotion = PromotionFactory()
+        logging.debug("Test Promotion: %s", test_promotion.serialize())
+        response = self.client.post(
+            BASE_URL,
+            json=test_promotion.serialize(),
+            headers={"Content-Type": "some wrong value"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+    # ----------------------------------------------------------
     # TEST UPDATE
     # ----------------------------------------------------------
     def test_update_promotion(self):
@@ -275,3 +289,11 @@ class TestPromotionResourceService(TestCase):
         response = self.client.delete(f"{BASE_URL}/{non_existent_id}")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
+
+    # ----------------------------------------------------------
+    # TEST INVALID METHODS
+    # ----------------------------------------------------------
+    def test_delete_invalid_methods(self):
+        """It should throw HTTP 405, METHOD_NOT_ALLOWED"""
+        response = self.client.delete(f"{BASE_URL}")
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
