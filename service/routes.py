@@ -109,6 +109,7 @@ def create_promotions():
         {"Location": location_url},
     )
 
+
 ######################################################################
 # UPDATE PROMOTION
 ######################################################################
@@ -139,6 +140,7 @@ def update_promotion(promotion_id):
     app.logger.info(f"Promotion with ID [{promotion_id}] updated successfully.")
 
     return jsonify(promotion.serialize()), status.HTTP_200_OK
+
 
 ######################################################################
 # DELETE A PROMOTION
