@@ -93,30 +93,34 @@ The root route provides metadata and basic information about the Promotion Servi
     }` 
 
 ### Create a Promotion
-
+- **URL**: `/promotions`
 - **Method**: `POST`
 - **Description**: Creates a new promotion.
 -   **Response**: Returns the created promotion details with a unique promotion ID.
 
 ### Read a Promotion
 
+-   **URL**: `/promotions/<promotion_id>`
 -   **Method**: `GET`
 -   **Description**: Retrieves details of a specific promotion by its ID.
 - **Response**: Returns the detailed information about the specific promotion being requested.
 ### Update a Promotion
 
+-   **URL**: `/promotions/<promotion_id>`
 -   **Method**: `PUT`
 -   **Description**: Updates an existing promotion.
 -   **Response**: Returns the updated promotion details.
 
 ### Delete a Promotion
 
+-   **URL**: `/promotions/<promotion_id>`
 -   **Method**: `DELETE`
 -   **Description**: Deletes a promotion by its ID.
 -   **Response**: Returns a success message.
 
 ### List Promotions
 
+-   **URL**: `/promotions`
 -   **Method**: `GET`
 -   **Description**: Lists all existing promotions.
 -   **Response**: Returns an array of promotion objects.
