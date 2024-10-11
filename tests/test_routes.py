@@ -242,6 +242,21 @@ class TestPromotionResourceService(TestCase):
         )
 
     # ----------------------------------------------------------
+    # TEST UPDATE 400 BAD_REQUEST
+    # ----------------------------------------------------------
+    def test_update_promotion_bad_request(self):
+        """It should not update an promotion with bad request"""
+        test_promotion = self._create_promotions(1)[0]
+
+        # bad update data structure
+        updated_data = {
+            "123": 123,
+        }
+
+        response = self.client.put(f"{BASE_URL}/{test_promotion.id}", json=updated_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    # ----------------------------------------------------------
     # TEST DELETE
     # ----------------------------------------------------------
     def test_delete_promotion(self):
