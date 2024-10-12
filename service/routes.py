@@ -174,14 +174,7 @@ def delete_promotions(promotion_id):
 ######################################################################
 def check_content_type(content_type) -> None:
     """Checks that the media type is correct"""
-    if "Content-Type" not in request.headers:
-        app.logger.error("No Content-Type specified.")
-        abort(
-            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            f"Content-Type must be {content_type}",
-        )
-
-    if request.headers["Content-Type"] == content_type:
+    if request.headers.get("Content-Type", "") == content_type:
         return
 
     app.logger.error("Invalid Content-Type: %s", request.headers["Content-Type"])
@@ -195,6 +188,7 @@ def check_content_type(content_type) -> None:
 # Checks whether a string is uuid4 string.
 ######################################################################
 def is_uuid4(uuid_string: str) -> bool:
+    """Check if a string is a valid UUID4"""
     try:
         # Try to convert the string to a UUID
         val = uuid.UUID(uuid_string, version=4)

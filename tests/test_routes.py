@@ -24,11 +24,11 @@ import logging
 from unittest import TestCase
 from uuid import uuid4
 from datetime import datetime, timezone
+import uuid
 from wsgi import app
 from service.common import status
 from service.models import db, Promotion
 from .factories import PromotionFactory
-import uuid
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
@@ -269,6 +269,27 @@ class TestPromotionResourceService(TestCase):
 
         response = self.client.put(f"{BASE_URL}/{test_promotion.id}", json=updated_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    # ----------------------------------------------------------
+    # TEST UPDATE 404 NOT_FOUND
+    # ----------------------------------------------------------
+    def test_update_promotion_not_found(self):
+        """It should not update a non-existing promotion"""
+        non_existent_id = uuid4()
+        updated_data = {
+            "name": "Updated Promotion Name",
+            "description": "Updated description",
+            "start_date": datetime.now(timezone.utc).isoformat(),
+            "end_date": datetime.now(timezone.utc).isoformat(),
+            "active_status": True,
+            "created_by": str(uuid.uuid4()),
+            "updated_by": str(uuid.uuid4()),
+            "product_ids": [str(uuid.uuid4())],
+            "extra": {"promotion_type": "percentage", "value": 15},
+        }
+
+        response = self.client.put(f"{BASE_URL}/{non_existent_id}", json=updated_data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     # ----------------------------------------------------------
     # TEST DELETE
