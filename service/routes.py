@@ -165,6 +165,24 @@ def delete_promotions(promotion_id):
 
 
 ######################################################################
+# LIST ALL PROMOTIONS
+######################################################################
+
+
+@app.route("/promotions", methods=["GET"])
+def list_promotions():
+    """
+    List all promotions
+
+    This endpoint will list all promotions stored in the DB
+    """
+    app.logger.info("List all promotions")
+    promos = Promotion.query.all()
+    result = [promotion.serialize() for promotion in promos]
+    return jsonify(result), status.HTTP_200_OK
+
+
+######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
 
