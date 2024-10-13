@@ -297,3 +297,53 @@ class TestPromotionResourceService(TestCase):
         """It should throw HTTP 405, METHOD_NOT_ALLOWED"""
         response = self.client.delete(f"{BASE_URL}")
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    # ----------------------------------------------------------
+    # TEST LIST
+    # ----------------------------------------------------------
+    def test_list_promotions(self):
+        """It should list all promotions"""
+        test_list_promos = self._create_promotions(2)
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.get_json()
+        self.assertEqual(
+            len(data), len(test_list_promos)
+        )  # check first if number of promos equal the number stored in the DB
+
+        for i, promo in enumerate(test_list_promos):
+            self.assertEqual(data[i]["name"], promo.name)
+            self.assertEqual(data[i]["description"], promo.description)
+            self.assertEqual(
+                datetime.fromisoformat(data[i]["start_date"]).replace(
+                    tzinfo=timezone.utc
+                ),
+                promo.start_date,
+            )
+            self.assertEqual(
+                datetime.fromisoformat(data[i]["end_date"]).replace(
+                    tzinfo=timezone.utc
+                ),
+                promo.end_date,
+            )
+            self.assertEqual(data[i]["active_status"], promo.active_status)
+            self.assertEqual(data[i]["created_by"], promo.created_by)
+            self.assertEqual(data[i]["updated_by"], promo.updated_by)
+            self.assertEqual(data[i]["product_ids"], promo.product_ids)
+            self.assertEqual(
+                data[i]["extra"]["promotion_type"], promo.extra["promotion_type"]
+            )
+            self.assertEqual(data[i]["extra"]["value"], promo.extra["value"])
+
+    # ----------------------------------------------------------
+    # TEST LIST (Sad Path)
+    # ----------------------------------------------------------
+    def test_list_promotions_empty(self):
+        """It should return an empty list if no promotions exist"""
+        response = self.client.get(BASE_URL)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.get_json()
+        self.assertEqual(len(data), 0)
