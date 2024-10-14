@@ -3,5 +3,7 @@
         "sqlalchemy",
         "psycopg",
         "testdb"
-    ]
+    ],
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
 }
