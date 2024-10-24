@@ -53,7 +53,7 @@ def index():
 ######################################################################
 # READ A PROMOTION
 ######################################################################
-@app.route("/promotions/<string:promotion_id>", methods=["GET"])
+@app.route("/promotions/<uuid:promotion_id>", methods=["GET"])
 def get_promotions(promotion_id):
     """
     Retrieve a single Promotion
@@ -62,12 +62,7 @@ def get_promotions(promotion_id):
     """
     app.logger.info("Request to Retrieve a promotion with id [%s]", promotion_id)
 
-    # Attempt to find the Promotion and abort if not found
-    promotion = None
-
-    # check if promotion_id is uuid4
-    if is_uuid4(promotion_id):
-        promotion = Promotion.find(promotion_id)
+    promotion = Promotion.find(promotion_id)
 
     if not promotion:
         abort(
@@ -113,7 +108,7 @@ def create_promotions():
 ######################################################################
 # UPDATE PROMOTION
 ######################################################################
-@app.route("/promotions/<string:promotion_id>", methods=["PUT"])
+@app.route("/promotions/<uuid:promotion_id>", methods=["PUT"])
 def update_promotion(promotion_id):
     """
     Update an existing Promotion

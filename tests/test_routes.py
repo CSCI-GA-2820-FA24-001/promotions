@@ -255,6 +255,14 @@ class TestPromotionResourceService(TestCase):
             updated_promotion["extra"]["value"], updated_data["extra"]["value"]
         )
 
+    def test_update_promotion_with_non_uuid_id(self):
+        """It should raise a 404 Method Not Found error when a non-UUID type promotion ID is used"""
+
+        non_uuid_id = "not-a-uuid"
+
+        response = self.client.put(f"{BASE_URL}/{non_uuid_id}", json={})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     # ----------------------------------------------------------
     # TEST UPDATE 400 BAD_REQUEST
     # ----------------------------------------------------------
