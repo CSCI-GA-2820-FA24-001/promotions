@@ -184,7 +184,7 @@ As a convenience you can aso use:
 make run
 ```
 
-You should be able to reach the service at: http://localhost:8000. The port that is used is controlled by an environment variable defined in the `.flaskenv` file which Flask uses to load it's configuration from the environment by default.
+You should be able to reach the service at: http://0.0.0.0:8080. The port that is used is controlled by an environment variable defined in the `.flaskenv` file which Flask uses to load it's configuration from the environment by default.
 
 ## License
 
