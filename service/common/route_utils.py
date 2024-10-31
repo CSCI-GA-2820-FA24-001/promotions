@@ -17,7 +17,10 @@ def check_content_type(content_type) -> None:
     if request.headers.get("Content-Type", "") == content_type:
         return
 
-    app.logger.error("Invalid Content-Type: %s", request.headers["Content-Type"])
+    app.logger.error(
+        "Invalid Content-Type: %s",
+        request.headers.get("Content-Type", "Content-Type not set"),
+    )
     abort(
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         f"Content-Type must be {content_type}",
