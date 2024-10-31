@@ -203,6 +203,11 @@ class TestPromotionResourceService(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
+    def test_create_promotion_no_content_type(self):
+        """It should raise a 415 unsupported media type error"""
+        response = self.client.post(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
     # ----------------------------------------------------------
     # TEST UPDATE
     # ----------------------------------------------------------
