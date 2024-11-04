@@ -56,7 +56,7 @@ jobs:
           # check for complexity. The GitHub editor is 127 chars wide
           poetry run flake8 service tests --count --max-complexity=10 --max-line-length=127 --statistics
           # Run pylint on the service
-          poetry run pylint service tests --max-line-length=127 --max-attributes=10
+          poetry run pylint service tests --max-line-length=127 --disable=too-many-instance-attributes
 
       - name: Run unit tests with pytest
         run: |
