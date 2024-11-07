@@ -23,8 +23,8 @@ import os
 import logging
 from unittest import TestCase
 from unittest.mock import patch
-from datetime import datetime
-from uuid import UUID
+from datetime import datetime, timedelta
+from uuid import UUID, uuid4
 from wsgi import app
 from service.models import Promotion, DataValidationError, db
 from .factories import PromotionFactory
@@ -265,3 +265,231 @@ class TestPromotion(TestCase):
 
         found_promotions = Promotion.find_by_name("Non-existent Sale")
         self.assertEqual(found_promotions.count(), 0)
+
+    def test_find_by_product_id_success(self):
+        """It should return promotions containing a specified product ID"""
+        product_id = "prod123"
+        promotion1 = PromotionFactory(product_ids=[product_id])
+        promotion2 = PromotionFactory(product_ids=["prod456"])  # Different product ID
+        promotion1.create()
+        promotion2.create()
+
+        found_promotions = Promotion.find_by_product_id(product_id)
+        self.assertEqual(len(found_promotions), 1)
+        self.assertIn(product_id, found_promotions[0].product_ids)
+
+    def test_find_by_product_id_not_found(self):
+        """It should return an empty list when no promotions contain the given product ID"""
+        found_promotions = Promotion.find_by_product_id("nonexistent123")
+        self.assertEqual(len(found_promotions), 0)
+
+    def test_find_by_start_date_exact_match(self):
+        """It should find promotions that start exactly on a specified date when exact_match is True."""
+        exact_start_date = datetime(2023, 12, 1)
+        promotion = PromotionFactory(start_date=exact_start_date)
+        promotion.create()
+
+        found_promotions = Promotion.find_by_start_date(
+            exact_start_date, exact_match=True
+        )
+        self.assertEqual(len(found_promotions), 1)
+        self.assertEqual(found_promotions[0].start_date, exact_start_date)
+
+    def test_find_by_start_date_on_or_after(self):
+        """It should find promotions that start on or after a specified date when exact_match is False."""
+        start_date = datetime(2023, 12, 1)
+        promotion1 = PromotionFactory(start_date=start_date)
+        promotion2 = PromotionFactory(
+            start_date=start_date + timedelta(days=10)
+        )  # Starts 10 days later
+        promotion1.create()
+        promotion2.create()
+
+        found_promotions = Promotion.find_by_start_date(start_date, exact_match=False)
+        self.assertEqual(len(found_promotions), 2)
+
+        promotion_dates = {promo.start_date for promo in found_promotions}
+        self.assertIn(start_date, promotion_dates)
+        self.assertIn(start_date + timedelta(days=10), promotion_dates)
+
+    def test_find_by_start_date_no_exact_matches(self):
+        """It should return an empty list if no promotions start exactly on the given date when exact_match is True."""
+        start_date = datetime(2023, 12, 1)
+        promotion = PromotionFactory(start_date=start_date + timedelta(days=1))
+        promotion.create()
+
+        found_promotions = Promotion.find_by_start_date(start_date, exact_match=True)
+        self.assertEqual(len(found_promotions), 0)
+
+    def test_find_by_start_date_no_matches_on_or_after(self):
+        """It should return an empty list if no promotions start on or after the given date when exact_match is False."""
+        start_date = datetime(2023, 12, 1)
+        promotion = PromotionFactory(start_date=start_date - timedelta(days=1))
+        promotion.create()
+
+        found_promotions = Promotion.find_by_start_date(start_date, exact_match=False)
+        self.assertEqual(len(found_promotions), 0)
+
+    def test_find_by_end_date_exact_match(self):
+        """It should find promotions that end exactly on a specified date when exact_match is True."""
+        exact_end_date = datetime(2023, 12, 31)
+        PromotionFactory(
+            end_date=exact_end_date,
+        ).create()
+        PromotionFactory(
+            end_date=datetime(2024, 1, 10),
+        ).create()
+
+        found_promotions = Promotion.find_by_end_date(exact_end_date, exact_match=True)
+        self.assertEqual(len(found_promotions), 1)
+
+    def test_find_by_end_date_on_or_before(self):
+        """It should find promotions that end on or before a specified date when exact_match is False."""
+        target_date = datetime(2024, 1, 5)
+        PromotionFactory(
+            name="End of Year Sale",
+            start_date=datetime(2023, 11, 20),
+            end_date=datetime(2023, 12, 31),
+        ).create()
+        PromotionFactory(
+            name="New Year Sale",
+            start_date=datetime(2023, 12, 25),
+            end_date=target_date,
+        ).create()
+
+        found_promotions = Promotion.find_by_end_date(target_date, exact_match=False)
+        self.assertEqual(len(found_promotions), 2)
+        promotion_names = {promo.name for promo in found_promotions}
+        self.assertTrue("End of Year Sale" in promotion_names)
+        self.assertTrue("New Year Sale" in promotion_names)
+
+    def test_find_by_end_date_no_exact_matches(self):
+        """It should return an empty list if no promotions end exactly on the given date when exact_match is True."""
+        PromotionFactory(
+            end_date=datetime(2024, 1, 15),
+        ).create()
+
+        non_existent_end_date = datetime(2024, 1, 14)
+        found_promotions = Promotion.find_by_end_date(
+            non_existent_end_date, exact_match=True
+        )
+        self.assertEqual(len(found_promotions), 0)
+
+    def test_find_by_end_date_no_matches_on_or_before(self):
+        """It should return an empty list if no promotions end on or before the given early date when exact_match is False."""
+        PromotionFactory(
+            end_date=datetime(2024, 2, 28),
+        ).create()
+
+        early_date = datetime(2024, 1, 15)
+        found_promotions = Promotion.find_by_end_date(early_date, exact_match=False)
+        self.assertEqual(len(found_promotions), 0)
+
+    def test_find_by_date_range_success(self):
+        """It should return promotions within the specified date range"""
+        start_date = datetime.now()
+        end_date = start_date + timedelta(days=10)
+        promotion = PromotionFactory(start_date=start_date, end_date=end_date)
+        promotion.create()
+
+        found_promotions = Promotion.find_by_date_range(start_date, end_date)
+        self.assertEqual(len(found_promotions), 1)
+        self.assertTrue(
+            found_promotions[0].start_date >= start_date
+            and found_promotions[0].end_date <= end_date
+        )
+
+    def test_find_by_date_range_no_results(self):
+        """It should return no promotions if none exist within the specified date range"""
+        outside_range_start = datetime.now() - timedelta(days=30)
+        outside_range_end = datetime.now() - timedelta(days=20)
+        PromotionFactory(
+            start_date=outside_range_start, end_date=outside_range_end
+        ).create()
+
+        start_date = datetime.now()
+        end_date = datetime.now() + timedelta(days=10)
+        found_promotions = Promotion.find_by_date_range(start_date, end_date)
+        self.assertEqual(len(found_promotions), 0)
+
+    def test_find_by_active_status_active(self):
+        """It should return only active promotions"""
+        promotion1 = PromotionFactory(active_status=True)
+        promotion2 = PromotionFactory(active_status=False)
+        promotion1.create()
+        promotion2.create()
+
+        active_promotions = Promotion.find_by_active_status(True)
+        self.assertEqual(len(active_promotions), 1)
+        self.assertTrue(active_promotions[0].active_status)
+
+    def test_find_by_active_status_inactive(self):
+        """It should return only inactive promotions"""
+        promotion1 = PromotionFactory(active_status=False)
+        promotion1.create()
+
+        inactive_promotions = Promotion.find_by_active_status(False)
+        self.assertEqual(len(inactive_promotions), 1)
+        self.assertFalse(inactive_promotions[0].active_status)
+
+    def test_find_by_creator(self):
+        """It should find promotions created by a specified user."""
+        creator_id_1 = uuid4()
+        creator_id_2 = uuid4()
+
+        PromotionFactory(
+            created_by=creator_id_1,
+        ).create()
+        PromotionFactory(
+            created_by=creator_id_1,
+        ).create()
+
+        PromotionFactory(
+            created_by=creator_id_2,
+        ).create()
+
+        found_promotions = Promotion.find_by_creator(creator_id_1)
+        self.assertEqual(len(found_promotions), 2)
+        self.assertTrue(
+            all(promo.created_by == creator_id_1 for promo in found_promotions)
+        )
+
+    def test_find_by_creator_no_matches(self):
+        """It should return an empty list if no promotions are created by the non-existent user."""
+        non_existent_id = uuid4()
+
+        PromotionFactory(created_by=uuid4()).create()  # Different user
+
+        found_promotions = Promotion.find_by_creator(non_existent_id)
+        self.assertEqual(len(found_promotions), 0)
+
+    def test_find_by_updater(self):
+        """It should find promotions last updated by a specified user."""
+        updater_id_1 = uuid4()
+        updater_id_2 = uuid4()
+
+        PromotionFactory(
+            updated_by=updater_id_1,
+        ).create()
+        PromotionFactory(
+            updated_by=updater_id_1,
+        ).create()
+
+        PromotionFactory(
+            updated_by=updater_id_2,
+        ).create()
+
+        found_promotions = Promotion.find_by_updater(updater_id_1)
+        self.assertEqual(len(found_promotions), 2)
+        self.assertTrue(
+            all(promo.updated_by == updater_id_1 for promo in found_promotions)
+        )
+
+    def test_find_by_updater_no_matches(self):
+        """It should return an empty list if no promotions are updated by the non-existent user."""
+        non_existent_id = uuid4()
+
+        PromotionFactory(updated_by=uuid4()).create()  # Different user
+
+        found_promotions = Promotion.find_by_updater(non_existent_id)
+        self.assertEqual(len(found_promotions), 0)

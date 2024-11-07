@@ -182,3 +182,106 @@ class Promotion(db.Model):
         """
         logger.info("Processing name query for %s ...", name)
         return cls.query.filter(cls.name == name)
+
+    @classmethod
+    def find_by_product_id(cls, product_id: str) -> list:
+        """
+        Returns all promotions that include the given product ID.
+
+        Args:
+            product_id (product_id): The product ID to match within the promotion's product_ids
+        """
+        logger.info("Processing product ID query for %s ...", product_id)
+        return cls.query.filter(cls.product_ids.contains([product_id])).all()
+
+    from datetime import datetime
+
+    @classmethod
+    def find_by_start_date(
+        cls, start_date: datetime, exact_match: bool = False
+    ) -> list:
+        """
+        Returns promotions based on the start date. The behavior changes based on the `exact_match` flag.
+
+        Args:
+            start_date (datetime): The date to match against the promotion's start date.
+            exact_match (bool, optional): Determines if the search should return promotions that start exactly on `start_date` (True) or on and after `start_date` (False). Default is False.
+
+        """
+        logger.info(
+            "Processing start date query for promotions starting %s %s ...",
+            "exactly on" if exact_match else "on or after",
+            start_date,
+        )
+        if exact_match:
+            return cls.query.filter(cls.start_date == start_date.date()).all()
+        else:
+            return cls.query.filter(cls.start_date >= start_date.date()).all()
+
+    @classmethod
+    def find_by_end_date(cls, end_date: datetime, exact_match: bool = False) -> list:
+        """
+        Returns promotions based on the end date. The behavior changes based on the `exact_match` flag.
+
+        Args:
+            end_date (datetime): The date to match against the promotion's end date.
+            exact_match (bool, optional): Determines if the search should return promotions that end exactly on `end_date` (True) or on or before `end_date` (False). Default is False.
+        """
+        logger.info(
+            "Processing end date query for promotions ending %s %s ...",
+            "exactly on" if exact_match else "on or before",
+            end_date,
+        )
+        if exact_match:
+            return cls.query.filter(cls.end_date == end_date.date()).all()
+        else:
+            return cls.query.filter(cls.end_date <= end_date.date()).all()
+
+    @classmethod
+    def find_by_date_range(cls, start_date: datetime, end_date: datetime) -> list:
+        """
+        Returns all promotions within a specified date range.
+
+        Args:
+            start_date (datetime): the start of the date range
+            end_date (datetime) : the end of the date range
+        """
+        logger.info(
+            "Processing date range query from %s to %s ...", start_date, end_date
+        )
+        return cls.query.filter(
+            cls.start_date <= end_date, cls.end_date >= start_date
+        ).all()
+
+    @classmethod
+    def find_by_active_status(cls, active_status: bool) -> list:
+        """Returns all promotions by their active status.
+        Args:
+            active_status (boolean): True for active promotions, False otherwise
+        """
+        logger.info(
+            "Processing active status query for active_status=%s ...", active_status
+        )
+        return cls.query.filter(cls.active_status == active_status).all()
+
+    @classmethod
+    def find_by_creator(cls, user_id: uuid.UUID) -> list:
+        """
+        Returns all promotions created by a specific user.
+
+        Args:
+            user_id (UUID): The UUID of the user who created the promotions
+        """
+        logger.info("Processing creator query for user_id=%s ...", user_id)
+        return cls.query.filter(cls.created_by == user_id).all()
+
+    @classmethod
+    def find_by_updater(cls, user_id: uuid.UUID) -> list:
+        """
+        Returns all promotions last updated by a specific user.
+
+        Args:
+            user_id (UUID): The UUID of the user who last updated the promotions
+        """
+        logger.info("Processing updater query for user_id=%s ...", user_id)
+        return cls.query.filter(cls.updated_by == user_id).all()

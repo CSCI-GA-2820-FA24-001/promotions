@@ -126,10 +126,7 @@ def update_promotion(promotion_id):
     data = request.get_json()
     app.logger.info(f"Processing update with data: {data}")
 
-    try:
-        promotion.deserialize(data)
-    except KeyError as error:
-        abort(status.HTTP_400_BAD_REQUEST, f"Invalid promotion data: {error}")
+    promotion.deserialize(data)
 
     promotion.update()
     app.logger.info(f"Promotion with ID [{promotion_id}] updated successfully.")
