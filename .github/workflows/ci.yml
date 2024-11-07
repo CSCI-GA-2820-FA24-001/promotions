@@ -60,7 +60,7 @@ jobs:
 
       - name: Run unit tests with pytest
         run: |
-          poetry run pytest --pspec --cov=service --cov-fail-under=95
+          poetry run pytest --pspec --cov=service --cov-report=xml --cov-fail-under=95
         env:
           DATABASE_URI: "postgresql+psycopg://postgres:pgs3cr3t@postgres:5432/testdb"
 
