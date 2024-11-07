@@ -194,8 +194,6 @@ class Promotion(db.Model):
         logger.info("Processing product ID query for %s ...", product_id)
         return cls.query.filter(cls.product_ids.contains([product_id])).all()
 
-    from datetime import datetime
-
     @classmethod
     def find_by_start_date(
         cls, start_date: datetime, exact_match: bool = False
@@ -205,8 +203,9 @@ class Promotion(db.Model):
 
         Args:
             start_date (datetime): The date to match against the promotion's start date.
-            exact_match (bool, optional): Determines if the search should return promotions that start exactly on `start_date` (True) or on and after `start_date` (False). Default is False.
-
+            exact_match (bool, optional): Determines if the search should return promotions
+                that start exactly on `start_date` (True) or on and after `start_date` (False).
+                Default is False.
         """
         logger.info(
             "Processing start date query for promotions starting %s %s ...",
@@ -215,8 +214,8 @@ class Promotion(db.Model):
         )
         if exact_match:
             return cls.query.filter(cls.start_date == start_date.date()).all()
-        else:
-            return cls.query.filter(cls.start_date >= start_date.date()).all()
+
+        return cls.query.filter(cls.start_date >= start_date.date()).all()
 
     @classmethod
     def find_by_end_date(cls, end_date: datetime, exact_match: bool = False) -> list:
@@ -225,7 +224,9 @@ class Promotion(db.Model):
 
         Args:
             end_date (datetime): The date to match against the promotion's end date.
-            exact_match (bool, optional): Determines if the search should return promotions that end exactly on `end_date` (True) or on or before `end_date` (False). Default is False.
+            exact_match (bool, optional): Determines if the search should return promotions that
+                end exactly on `end_date` (True) or on or before `end_date` (False).
+                Default is False.
         """
         logger.info(
             "Processing end date query for promotions ending %s %s ...",
@@ -234,8 +235,8 @@ class Promotion(db.Model):
         )
         if exact_match:
             return cls.query.filter(cls.end_date == end_date.date()).all()
-        else:
-            return cls.query.filter(cls.end_date <= end_date.date()).all()
+
+        return cls.query.filter(cls.end_date <= end_date.date()).all()
 
     @classmethod
     def find_by_date_range(cls, start_date: datetime, end_date: datetime) -> list:
