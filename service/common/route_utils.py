@@ -2,6 +2,8 @@
 from flask import request, abort
 from flask import current_app as app  # Import Flask application
 from service.common import status  # HTTP Status Codes
+from datetime import datetime
+from dateutil.parser import parse, ParserError
 
 
 ######################################################################
@@ -25,6 +27,20 @@ def check_content_type(content_type) -> None:
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         f"Content-Type must be {content_type}",
     )
+
+
+def parse_with_try(date: str | None) -> datetime | None:
+    """parse datetime string with try catch, return None if not valid"""
+    try:
+        if date:
+            return parse(date)
+    except ParserError:
+        # Invalid date format, should do nothing
+        app.logger.error(
+            "Invalid Date Format: %s",
+            date,
+        )
+    return None
 
 
 # ######################################################################
