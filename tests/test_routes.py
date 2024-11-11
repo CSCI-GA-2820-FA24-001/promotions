@@ -25,6 +25,7 @@ from unittest import TestCase
 from uuid import uuid4
 from datetime import datetime, timezone
 import uuid
+from urllib.parse import quote_plus
 from wsgi import app
 from service.common import status
 from service.models import db, Promotion
@@ -71,7 +72,7 @@ class TestPromotionResourceService(TestCase):
     ############################################################
     # Utility function to bulk create promotions
     ############################################################
-    def _create_promotions(self, count: int = 1) -> list:
+    def _create_promotions(self, count: int = 1) -> list[Promotion]:
         """Factory method to create promotions in bulk"""
         promotions = []
         for _ in range(count):
@@ -369,6 +370,255 @@ class TestPromotionResourceService(TestCase):
                 data[i]["extra"]["promotion_type"], promo.extra["promotion_type"]
             )
             self.assertEqual(data[i]["extra"]["value"], promo.extra["value"])
+
+    # ----------------------------------------------------------
+    # TEST QUERY
+    # ----------------------------------------------------------
+    def test_query_by_name(self):
+        """It should Query Promotions by name"""
+        promotions = self._create_promotions(5)
+        test_name = promotions[0].name
+        name_count = len(
+            [promotion for promotion in promotions if promotion.name == test_name]
+        )
+        response = self.client.get(
+            BASE_URL, query_string=f"name={quote_plus(test_name)}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), name_count)
+        # check the data just to be sure
+        for promotion in data:
+            self.assertEqual(promotion["name"], test_name)
+
+    def test_query_by_product_id(self):
+        """It should query by Product id"""
+        promotions = self._create_promotions(10)
+        test_product_id = promotions[0].product_ids[0]
+        product_id_count = len(
+            [
+                promotion
+                for promotion in promotions
+                if test_product_id in promotion.product_ids
+            ]
+        )
+        response = self.client.get(
+            BASE_URL, query_string=f"product_id={quote_plus(test_product_id)}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), product_id_count)
+        # check the data just to be sure
+        for promotion in data:
+            self.assertTrue(test_product_id in promotion["product_ids"])
+
+    def test_query_by_date_range(self):
+        """It should query by date range"""
+        promotions = self._create_promotions(10)
+        test_start_date = promotions[0].start_date
+        test_end_date = promotions[0].end_date
+        date_range_count = len(
+            [
+                promotion
+                for promotion in promotions
+                if promotion.start_date <= test_end_date
+                and promotion.end_date >= test_start_date
+            ]
+        )
+        response = self.client.get(
+            BASE_URL,
+            query_string=f"start_date={quote_plus(test_start_date.isoformat())}"
+            + f"&end_date={quote_plus(test_end_date.isoformat())}",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), date_range_count)
+        # check the data just to be sure
+        for promotion in data:
+            self.assertTrue(
+                datetime.fromisoformat(promotion["start_date"]).replace(
+                    tzinfo=timezone.utc
+                )
+                <= test_end_date
+                and datetime.fromisoformat(promotion["end_date"]).replace(
+                    tzinfo=timezone.utc
+                )
+                >= test_start_date
+            )
+
+    def test_query_by_start_date(self):
+        """It should query by start date"""
+        promotions = self._create_promotions(10)
+        test_start_date = promotions[0].start_date
+        start_date_count = len(
+            [
+                promotion
+                for promotion in promotions
+                if promotion.start_date >= test_start_date
+            ]
+        )
+        response = self.client.get(
+            BASE_URL,
+            query_string=f"start_date={quote_plus(test_start_date.isoformat())}",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), start_date_count)
+        # check the data just to be sure
+        for promotion in data:
+            self.assertTrue(
+                datetime.fromisoformat(promotion["start_date"]).replace(
+                    tzinfo=timezone.utc
+                )
+                >= test_start_date
+            )
+
+    def test_query_by_start_date_exact_match(self):
+        """It should query by start date (exact match)"""
+        promotions = self._create_promotions(10)
+        test_start_date = promotions[0].start_date
+        start_date_count = len(
+            [
+                promotion
+                for promotion in promotions
+                if promotion.start_date == test_start_date
+            ]
+        )
+        response = self.client.get(
+            BASE_URL,
+            query_string=f"start_date={quote_plus(test_start_date.isoformat())}&exact_match=true",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), start_date_count)
+        # check the data just to be sure
+        for promotion in data:
+            self.assertTrue(
+                datetime.fromisoformat(promotion["start_date"]).replace(
+                    tzinfo=timezone.utc
+                )
+                == test_start_date
+            )
+
+    def test_query_by_end_date(self):
+        """It should query by end date"""
+        promotions = self._create_promotions(10)
+        test_end_date = promotions[0].end_date
+        end_date_count = len(
+            [
+                promotion
+                for promotion in promotions
+                if promotion.end_date <= test_end_date
+            ]
+        )
+        response = self.client.get(
+            BASE_URL,
+            query_string=f"end_date={quote_plus(test_end_date.isoformat())}",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), end_date_count)
+        # check the data just to be sure
+        for promotion in data:
+            self.assertTrue(
+                datetime.fromisoformat(promotion["end_date"]).replace(
+                    tzinfo=timezone.utc
+                )
+                <= test_end_date
+            )
+
+    def test_query_by_end_date_exact_match(self):
+        """It should query by end date (exact match)"""
+        promotions = self._create_promotions(10)
+        test_end_date = promotions[0].end_date
+        end_date_count = len(
+            [
+                promotion
+                for promotion in promotions
+                if promotion.end_date == test_end_date
+            ]
+        )
+        response = self.client.get(
+            BASE_URL,
+            query_string=f"end_date={quote_plus(test_end_date.isoformat())}&exact_match=true",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), end_date_count)
+        # check the data just to be sure
+        for promotion in data:
+            self.assertTrue(
+                datetime.fromisoformat(promotion["end_date"]).replace(
+                    tzinfo=timezone.utc
+                )
+                == test_end_date
+            )
+
+    def test_query_by_active_status(self):
+        """It should query by active status"""
+        promotions = self._create_promotions(5)
+        test_active_status = promotions[0].active_status
+        active_status_count = len(
+            [
+                promotion
+                for promotion in promotions
+                if promotion.active_status == test_active_status
+            ]
+        )
+        response = self.client.get(
+            BASE_URL,
+            query_string=f"active_status={quote_plus(str(test_active_status))}",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), active_status_count)
+        # check the data just to be sure
+        for promotion in data:
+            self.assertEqual(promotion["active_status"], test_active_status)
+
+    def test_query_by_creator(self):
+        """It should query by creator"""
+        promotions = self._create_promotions(5)
+        test_created_by = promotions[0].created_by
+        creator_count = len(
+            [
+                promotion
+                for promotion in promotions
+                if promotion.created_by == test_created_by
+            ]
+        )
+        response = self.client.get(
+            BASE_URL,
+            query_string=f"created_by={quote_plus(test_created_by)}",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), creator_count)
+        # check the data just to be sure
+        for promotion in data:
+            self.assertEqual(promotion["created_by"], test_created_by)
+
+    def test_query_by_updater(self):
+        """It should query by creator"""
+        promotions = self._create_promotions(5)
+        test_updated_by = promotions[0].updated_by
+        updater_count = len(
+            [
+                promotion
+                for promotion in promotions
+                if promotion.updated_by == test_updated_by
+            ]
+        )
+        response = self.client.get(
+            BASE_URL,
+            query_string=f"updated_by={quote_plus(test_updated_by)}",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), updater_count)
+        # check the data just to be sure
+        for promotion in data:
+            self.assertEqual(promotion["updated_by"], test_updated_by)
 
     # ----------------------------------------------------------
     # TEST LIST (Sad Path)
