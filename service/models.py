@@ -213,9 +213,9 @@ class Promotion(db.Model):
             start_date,
         )
         if exact_match:
-            return cls.query.filter(cls.start_date == start_date.date()).all()
+            return cls.query.filter(cls.start_date == start_date).all()
 
-        return cls.query.filter(cls.start_date >= start_date.date()).all()
+        return cls.query.filter(cls.start_date >= start_date).all()
 
     @classmethod
     def find_by_end_date(cls, end_date: datetime, exact_match: bool = False) -> list:
@@ -234,9 +234,9 @@ class Promotion(db.Model):
             end_date,
         )
         if exact_match:
-            return cls.query.filter(cls.end_date == end_date.date()).all()
+            return cls.query.filter(cls.end_date == end_date).all()
 
-        return cls.query.filter(cls.end_date <= end_date.date()).all()
+        return cls.query.filter(cls.end_date <= end_date).all()
 
     @classmethod
     def find_by_date_range(cls, start_date: datetime, end_date: datetime) -> list:
