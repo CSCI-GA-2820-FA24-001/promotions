@@ -26,6 +26,7 @@ from flask import current_app as app  # Import Flask application
 from service.models import Promotion
 from service.common import status  # HTTP Status Codes
 from service.common.route_utils import check_content_type
+from dateutil.parser import parse
 
 
 ######################################################################
@@ -159,8 +160,6 @@ def delete_promotions(promotion_id):
 ######################################################################
 # LIST ALL PROMOTIONS
 ######################################################################
-
-
 @app.route("/promotions", methods=["GET"])
 def list_promotions():
     """
@@ -168,7 +167,56 @@ def list_promotions():
 
     This endpoint will list all promotions stored in the DB
     """
-    app.logger.info("List all promotions")
-    promos = Promotion.query.all()
+    app.logger.info("Request for a promotion list")
+
+    promos = []
+
+    # Parse any arguments from the query string
+    name = request.args.get("name")
+    product_id = request.args.get("product_id")
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+    exact_match = request.args.get("exact_match", "false").lower() in [
+        "true",
+        "yes",
+        "1",
+    ]
+    active_status = request.args.get("active_status")
+    created_by = request.args.get("created_by")
+    updated_by = request.args.get("updated_by")
+
+    if name:
+        app.logger.info("Find by name: %s", name)
+        promos = Promotion.find_by_name(name=name)
+    elif product_id:
+        app.logger.info("Find by product_id: %s", product_id)
+        promos = Promotion.find_by_product_id(product_id=product_id)
+    elif start_date and end_date:
+        app.logger.info("Find by date range: %s --- %s", start_date, end_date)
+        start = parse(start_date)
+        end = parse(end_date)
+        promos = Promotion.find_by_date_range(start_date=start, end_date=end)
+    elif start_date:
+        app.logger.info("Find by start_date: %s", start_date)
+        start = parse(start_date)
+        promos = Promotion.find_by_start_date(start_date=start, exact_match=exact_match)
+    elif end_date:
+        app.logger.info("Find by end_date: %s", end_date)
+        end = parse(end_date)
+        promos = Promotion.find_by_end_date(end_date=end, exact_match=exact_match)
+    elif active_status:
+        app.logger.info("Find by active_status: %s", active_status)
+        active_status_value = active_status.lower() in ["true", "yes", "1"]
+        promos = Promotion.find_by_active_status(active_status=active_status_value)
+    elif created_by:
+        app.logger.info("Find by creator: %s", created_by)
+        promos = Promotion.find_by_creator(user_id=created_by)
+    elif updated_by:
+        app.logger.info("Find by updater: %s", updated_by)
+        promos = Promotion.find_by_updater(user_id=updated_by)
+    else:
+        app.logger.info("Find all")
+        promos = Promotion.query.all()
+
     result = [promotion.serialize() for promotion in promos]
     return jsonify(result), status.HTTP_200_OK
