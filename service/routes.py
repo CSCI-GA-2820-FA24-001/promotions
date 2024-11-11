@@ -172,3 +172,37 @@ def list_promotions():
     promos = Promotion.query.all()
     result = [promotion.serialize() for promotion in promos]
     return jsonify(result), status.HTTP_200_OK
+
+
+######################################################################
+# ACTIVATE A PROMOTION
+######################################################################
+
+
+@app.route("/promotions/<promotion_id>/activate", methods=["PATCH"])
+def activate_promotion(promotion_id):
+    """Activate a promotion by setting its active_status to True"""
+    promotion = Promotion.query.get(promotion_id)
+    if not promotion:
+        abort(404, f"Promotion with id {promotion_id} not found")
+    promotion.active_status = True
+    promotion.update()
+
+    return (
+        jsonify(message="Promotion activated", active_status=promotion.active_status),
+        200,
+    )
+
+
+@app.route("/promotions/<promotion_id>/deactivate", methods=["PATCH"])
+def deactivate_promotion(promotion_id):
+    """Deactivate a promotion by setting its active_status to False"""
+    promotion = Promotion.query.get(promotion_id)
+    if not promotion:
+        abort(404, f"Promotion with id {promotion_id} not found")
+    promotion.active_status = False
+    promotion.update()
+    return (
+        jsonify(message="Promotion deactivated", active_status=promotion.active_status),
+        200,
+    )
