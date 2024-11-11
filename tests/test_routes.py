@@ -634,6 +634,38 @@ class TestPromotionResourceService(TestCase):
         data = response.get_json()
         self.assertEqual(len(data), 0)
 
+    def test_activate_promotion(self):
+        """It should activate a promotion"""
+        test_promotion = self._create_promotions(1)[0]
+        test_promotion.active_status = False
+        response = self.client.patch(f"{BASE_URL}/{test_promotion.id}/activate")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertTrue(data["active_status"])
+        self.assertEqual(data["message"], "Promotion activated")
+
+    def test_deactivate_promotion(self):
+        """It should deactivate a promotion"""
+        test_promotion = self._create_promotions(1)[0]
+        test_promotion.active_status = True
+        response = self.client.patch(f"{BASE_URL}/{test_promotion.id}/deactivate")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertFalse(data["active_status"])
+        self.assertEqual(data["message"], "Promotion deactivated")
+
+    def test_activate_promotion_not_found(self):
+        """It should return 404 if the promotion to activate does not exist"""
+        sample_uuid = str(uuid4())
+        response = self.client.patch(f"{BASE_URL}/{sample_uuid}/activate")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_deactivate_promotion_not_found(self):
+        """It should return 404 if the promotion to deactivate does not exist"""
+        sample_uuid = str(uuid4())
+        response = self.client.patch(f"{BASE_URL}/{sample_uuid}/deactivate")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     # ----------------------------------------------------------
     # TEST LIST Query By Attributes (Sad Path)
     # ----------------------------------------------------------
