@@ -227,7 +227,7 @@ def list_promotions():
 @app.route("/promotions/<promotion_id>/activate", methods=["PATCH"])
 def activate_promotion(promotion_id):
     """Activate a promotion by setting its active_status to True"""
-    promotion = Promotion.query.get(promotion_id)
+    promotion = Promotion.find(promotion_id)
     if not promotion:
         abort(404, f"Promotion with id {promotion_id} not found")
     promotion.active_status = True
@@ -242,7 +242,7 @@ def activate_promotion(promotion_id):
 @app.route("/promotions/<promotion_id>/deactivate", methods=["PATCH"])
 def deactivate_promotion(promotion_id):
     """Deactivate a promotion by setting its active_status to False"""
-    promotion = Promotion.query.get(promotion_id)
+    promotion = Promotion.find(promotion_id)
     if not promotion:
         abort(404, f"Promotion with id {promotion_id} not found")
     promotion.active_status = False
