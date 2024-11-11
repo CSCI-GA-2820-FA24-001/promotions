@@ -22,13 +22,15 @@ TestPromotion API Service Test Suite
 import os
 import logging
 from unittest import TestCase
+from unittest.mock import patch
+
 from uuid import uuid4
 from datetime import datetime, timezone
-import uuid
 from urllib.parse import quote_plus
 from wsgi import app
 from service.common import status
 from service.models import db, Promotion
+from werkzeug.exceptions import InternalServerError
 from .factories import PromotionFactory
 
 DATABASE_URI = os.getenv(
@@ -223,7 +225,7 @@ class TestPromotionResourceService(TestCase):
             "end_date": test_promotion.end_date.isoformat(),
             "active_status": not test_promotion.active_status,  # Flip the active status
             "created_by": test_promotion.created_by,
-            "updated_by": str(uuid.uuid4()),
+            "updated_by": str(uuid4()),
             "product_ids": test_promotion.product_ids,
             "extra": {"promotion_type": "percentage", "value": 15},
         }
@@ -296,9 +298,9 @@ class TestPromotionResourceService(TestCase):
             "start_date": datetime.now(timezone.utc).isoformat(),
             "end_date": datetime.now(timezone.utc).isoformat(),
             "active_status": True,
-            "created_by": str(uuid.uuid4()),
-            "updated_by": str(uuid.uuid4()),
-            "product_ids": [str(uuid.uuid4())],
+            "created_by": str(uuid4()),
+            "updated_by": str(uuid4()),
+            "product_ids": [str(uuid4())],
             "extra": {"promotion_type": "percentage", "value": 15},
         }
 
@@ -599,7 +601,7 @@ class TestPromotionResourceService(TestCase):
             self.assertEqual(promotion["created_by"], test_created_by)
 
     def test_query_by_updater(self):
-        """It should query by creator"""
+        """It should query by updater"""
         promotions = self._create_promotions(5)
         test_updated_by = promotions[0].updated_by
         updater_count = len(
@@ -631,3 +633,68 @@ class TestPromotionResourceService(TestCase):
 
         data = response.get_json()
         self.assertEqual(len(data), 0)
+
+    # ----------------------------------------------------------
+    # TEST LIST Query By Attributes (Sad Path)
+    # ----------------------------------------------------------
+    def test_query_by_name_empty(self):
+        """It should Query Promotions by name (empty)"""
+        response = self.client.get(BASE_URL, query_string="name=hello")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 0)
+
+    def test_query_by_product_id_empty(self):
+        """It should Query Promotions by product_id (empty)"""
+        response = self.client.get(BASE_URL, query_string="product_id=hello")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 0)
+
+    def test_query_by_start_date_empty(self):
+        """It should Query Promotions by start date (empty)"""
+        response = self.client.get(BASE_URL, query_string="start_date=2023-12-31")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 0)
+
+    def test_query_by_start_date_wrong_date_format(self):
+        """It should Query Promotions by start date (empty + wrong date format)"""
+        response = self.client.get(
+            BASE_URL, query_string=f"start_date={quote_plus('Wrong Date')}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 0)
+
+    def test_query_by_end_date_wrong_date_format(self):
+        """It should Query Promotions by end date (empty + wrong date format)"""
+        response = self.client.get(
+            BASE_URL, query_string=f"end_date={quote_plus('Wrong Date')}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 0)
+
+    def test_query_by_date_range_wrong_date_format(self):
+        """It should Query Promotions by date range (empty + wrong date format)"""
+        response = self.client.get(
+            BASE_URL,
+            query_string=f"start_date={quote_plus('Wrong Date')}&end_date={quote_plus('Wrong Date')}",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 0)
+
+    # ----------------------------------------------------------
+    # TEST INTERNAL SERVER ERROR 500
+    # ----------------------------------------------------------
+    @patch("service.routes.Promotion.find_by_name")
+    def test_internal_server_error(self, internal_error_mock):
+        # use Internal Server Error to mock abort 500 status code
+        internal_error_mock.side_effect = InternalServerError(
+            "An internal server error occurred"
+        )
+
+        response = self.client.get(BASE_URL, query_string="name=hello")
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)

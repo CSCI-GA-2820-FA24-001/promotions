@@ -26,7 +26,7 @@ from flask import current_app as app  # Import Flask application
 from service.models import Promotion
 from service.common import status  # HTTP Status Codes
 from service.common.route_utils import check_content_type
-from dateutil.parser import parse
+from dateutil.parser import parse, ParserError
 
 
 ######################################################################
@@ -193,17 +193,37 @@ def list_promotions():
         promos = Promotion.find_by_product_id(product_id=product_id)
     elif start_date and end_date:
         app.logger.info("Find by date range: %s --- %s", start_date, end_date)
-        start = parse(start_date)
-        end = parse(end_date)
-        promos = Promotion.find_by_date_range(start_date=start, end_date=end)
+        try:
+            start = parse(start_date)
+            end = parse(end_date)
+            promos = Promotion.find_by_date_range(start_date=start, end_date=end)
+        except ParserError:
+            # Invalid date format, should do nothing
+            app.logger.error("Invalid Date Format: %s --- %s", start_date, end_date)
     elif start_date:
         app.logger.info("Find by start_date: %s", start_date)
-        start = parse(start_date)
-        promos = Promotion.find_by_start_date(start_date=start, exact_match=exact_match)
+        try:
+            start = parse(start_date)
+            promos = Promotion.find_by_start_date(
+                start_date=start, exact_match=exact_match
+            )
+        except ParserError:
+            # Invalid date format, should do nothing
+            app.logger.error(
+                "Invalid Start Date Format: %s",
+                start_date,
+            )
     elif end_date:
         app.logger.info("Find by end_date: %s", end_date)
-        end = parse(end_date)
-        promos = Promotion.find_by_end_date(end_date=end, exact_match=exact_match)
+        try:
+            end = parse(end_date)
+            promos = Promotion.find_by_end_date(end_date=end, exact_match=exact_match)
+        except ParserError:
+            # Invalid date format, should do nothing
+            app.logger.error(
+                "Invalid End Date Format: %s",
+                end_date,
+            )
     elif active_status:
         app.logger.info("Find by active_status: %s", active_status)
         active_status_value = active_status.lower() in ["true", "yes", "1"]
