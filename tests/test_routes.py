@@ -27,10 +27,10 @@ from unittest.mock import patch
 from uuid import uuid4
 from datetime import datetime, timezone
 from urllib.parse import quote_plus
+from werkzeug.exceptions import InternalServerError
 from wsgi import app
 from service.common import status
 from service.models import db, Promotion
-from werkzeug.exceptions import InternalServerError
 from .factories import PromotionFactory
 
 DATABASE_URI = os.getenv(
@@ -691,6 +691,7 @@ class TestPromotionResourceService(TestCase):
     # ----------------------------------------------------------
     @patch("service.routes.Promotion.find_by_name")
     def test_internal_server_error(self, internal_error_mock):
+        """It should raise internal server error"""
         # use Internal Server Error to mock abort 500 status code
         internal_error_mock.side_effect = InternalServerError(
             "An internal server error occurred"
