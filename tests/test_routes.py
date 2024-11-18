@@ -105,7 +105,7 @@ class TestPromotionResourceService(TestCase):
 
     def test_health(self):
         """It should get the health endpoint"""
-        resp = self.app.get("/health")
+        resp = self.client.get("/health")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(data["status"], "OK")
