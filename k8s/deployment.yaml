@@ -5,12 +5,12 @@ metadata:
   labels:
     app: promotions
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 0%
-      maxUnavailable: 50%
+      maxSurge: 2
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: promotions
@@ -22,9 +22,9 @@ spec:
       restartPolicy: Always
       containers:
         - name: promotions
-          image: cluster-registry:32000/promotions:latest
+          image: cluster-registry:5000/promotions:latest
           #image: promotions
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
               protocol: TCP
@@ -35,7 +35,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: postgres-creds
-                  key: database_uri
+                  key: database-uri
           readinessProbe:
             initialDelaySeconds: 5
             periodSeconds: 30
