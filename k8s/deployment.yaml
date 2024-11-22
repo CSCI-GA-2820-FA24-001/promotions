@@ -24,7 +24,7 @@ spec:
         - name: promotions
           image: cluster-registry:5000/promotions:latest
           #image: promotions
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
               protocol: TCP
