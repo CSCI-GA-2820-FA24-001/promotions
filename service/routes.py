@@ -33,17 +33,8 @@ from service.common.route_utils import check_content_type, parse_with_try
 ######################################################################
 @app.route("/")
 def index():
-    """Root URL response"""
-    promotion_metadata = {
-        "service_name": "Promotion Service",
-        "version": "v1.0",
-        "endpoint": "/promotions",
-    }
-    return (
-        promotion_metadata,
-        status.HTTP_200_OK,
-    )
-
+    """Base URL for our service"""
+    return app.send_static_file("index.html")
 
 ######################################################################
 #  R E S T   A P I   E N D P O I N T S

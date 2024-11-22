@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Promotion Demo RESTful Service</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="static/images/newapp-icon.png">
+  <link rel="stylesheet" href="static/css/cerulean_bootstrap.min.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>Promotion Demo REST API Service</h1>
+    </div>
+
+    <!-- Flash Message -->
+    <div class="table-responsive">
+      <table class="table">
+        <tr>
+          <td>Status:</td>
+          <td><span id="flash_message"></span></td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>Create, Retrieve, Update, and Delete a Promotion:</h3>
+
+
+    <ul class="nav nav-tabs" role="tablist">
+      <li role="presentation" class="active"><a href="#create" aria-controls="create" role="tab"
+          data-toggle="tab">Create A Promotion</a></li>
+      <li role="presentation"><a href="#search" aria-controls="search" role="tab" data-toggle="tab">Search
+          Promotions</a></li>
+      <li role="presentation"><a href="#retrieve" aria-controls="retrieve" role="tab" data-toggle="tab">Retrieve
+          Promotion</a></li>
+      <li role="presentation"><a href="#delete" aria-controls="delete" role="tab" data-toggle="tab">Delete Promotion</a>
+      </li>
+      <li role="presentation"><a href="#update" aria-controls="update" role="tab" data-toggle="tab">Update A
+          Promotion</a>
+      </li>
+    </ul>
+
+    <!-- Tab content container -->
+    <div class="tab-content">
+      <!-- Create Promotion Tab Pane -->
+      <div role="tabpanel" class="tab-pane active" id="create">
+        <div class="well">
+          <form id="createPromotionForm" class="form-horizontal">
+            <!-- Promotion Name -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="create_promotion_name">Name:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="create_promotion_name" required
+                  placeholder="Enter Promotion Name">
+              </div>
+            </div>
+
+            <!-- Promotion Description -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="create_promotion_description">Description:</label>
+              <div class="col-sm-10">
+                <textarea class="form-control" id="create_promotion_description"
+                  placeholder="Enter Description"></textarea>
+              </div>
+            </div>
+
+            <!-- Product IDs -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="create_promotion_product_ids">Product IDs:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="create_promotion_product_ids"
+                  placeholder="Enter Product IDs e.g. produce_id1, product_id2..">
+              </div>
+            </div>
+
+            <!-- Start Date -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="create_promotion_start_date">Start Date:</label>
+              <div class="col-sm-10">
+                <input type="date" class="form-control" id="create_promotion_start_date"
+                  onchange="updateEndDateMin(this.value,'create')" required>
+              </div>
+            </div>
+
+            <!-- End Date -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="create_promotion_end_date">End Date:</label>
+              <div class="col-sm-10">
+                <input type="date" class="form-control" id="create_promotion_end_date"
+                  onchange="updateStartDateMax(this.value,'create')" required>
+              </div>
+            </div>
+
+            <!-- Active Status -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="create_promotion_active_status">Active Status:</label>
+              <div class="col-sm-10">
+                <select class="form-control" id="create_promotion_active_status">
+                  <option value="true">Active</option>
+                  <option value="false">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Creator ID -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="create_promotion_creator">Creator's UUID:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="create_promotion_creator" required
+                  placeholder="Enter Creator's UUID">
+              </div>
+            </div>
+
+            <!-- Updater ID -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="create_promotion_updater">Updater's UUID:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="create_promotion_updater" required
+                  placeholder="Enter Updater's UUID">
+              </div>
+            </div>
+
+            <!-- Additional Metadata (JSON) -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="create_promotion_extra">Additional Metadata:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="create_promotion_extra"
+                  placeholder="Enter Additional Metadata as JSON">
+              </div>
+            </div>
+
+            <!-- Submission Button -->
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-success">Create</button>
+                <button type="button" id="clear-create" class="btn btn-secondary"
+                  onclick="clearForm('create')">Clear</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+
+      <!-- Search Promotion Tab Pane -->
+      <div role="tabpanel" class="tab-pane" id="search">
+        <div class="well">
+          <form id="searchPromotionForm" class="form-horizontal">
+            <!-- Search by Promotion Name -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="search_promotion_name">Name:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="search_promotion_name" placeholder="Search by Name">
+              </div>
+            </div>
+
+            <!-- Search by Product ID -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="search_promotion_product_id">Product ID:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="search_promotion_product_id"
+                  placeholder="Search by Product ID">
+              </div>
+            </div>
+
+            <!-- Search by Start Date -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="search_promotion_start_date">Start Date:</label>
+              <div class="col-sm-10">
+                <input type="date" class="form-control" id="search_promotion_start_date"
+                  onchange="updateEndDateMin(this.value, 'search')">
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" id="exact_match_start_date"> Search for promotions ending exactly on this
+                    date
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Search by End Date -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="search_promotion_end_date">End Date:</label>
+              <div class="col-sm-10">
+                <input type="date" class="form-control" id="search_promotion_end_date"
+                  onchange="updateStartDateMax(this.value, 'search')">
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" id="exact_match_end_date"> Search for promotions ending exactly on this date
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Search by Date Range -->
+            <div class="form-group">
+              <label class="control-label col-sm-2">Date Range:</label>
+              <div class="col-sm-10">
+                <div class="row">
+                  <div class="col-md-6">
+                    <label for="search_promotion_date_range_start">Start Date:</label>
+                    <input type="date" class="form-control" id="search_promotion_date_range_start"
+                      placeholder="Start Date" onchange="updateEndDateMin(this.value, 'search-range')">
+                  </div>
+                  <div class="col-md-6">
+                    <label for="search_promotion_date_range_end">End Date:</label>
+                    <input type="date" class="form-control" id="search_promotion_date_range_end" placeholder="End Date"
+                      disabled>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <!-- Search by Active Status -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="search_promotion_active_status">Active Status:</label>
+              <div class="col-sm-10">
+                <select class="form-control" id="search_promotion_active_status">
+                  <option value="">Any</option>
+                  <option value="true">Active</option>
+                  <option value="false">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Search by Creator's UUID -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="search_promotion_creator">Creator's UUID:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="search_promotion_creator"
+                  placeholder="Search by Creator's UUID">
+              </div>
+            </div>
+
+            <!-- Search by Updater's UUID -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="search_promotion_updater">Updater's UUID:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="search_promotion_updater"
+                  placeholder="Search by Updater's UUID">
+              </div>
+            </div>
+
+            <!-- Submission Button for Search -->
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-primary">Search</button>
+                <button type="button" id="clear-create" class="btn btn-secondary"
+                  onclick="clearForm('search')">Clear</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Retrieve Promotion Tab Pane -->
+      <div role="tabpanel" class="tab-pane" id="retrieve">
+        <div class="well">
+          <form id="retrievePromotionForm" class="form-horizontal">
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="retrieve_promotion_id">Promotion ID:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="retrieve_promotion_id"
+                  placeholder="Enter ID of Promotion to Retrieve">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Retrieve</button>
+                <button type="button" id="clear-retrieve" class="btn btn-secondary"
+                  onclick="clearForm('retrieve')">Clear</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+
+      <!-- Delete Promotion Tab Pane -->
+      <div role="tabpanel" class="tab-pane" id="delete">
+        <div class="well">
+          <form id="deletePromotionForm" class="form-horizontal">
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="delete_promotion_id">Promotion ID:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="delete_promotion_id"
+                  placeholder="Enter ID of Promotion to Delete">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10 d-flex gap-2">
+                <button type="submit" class="btn btn-danger">Delete</button>
+                <button type="button" id="clear-delete" class="btn btn-secondary"
+                  onclick="clearForm('delete')">Clear</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+
+
+      <!-- Update Promotion Tab Pane -->
+      <div role="tabpanel" class="tab-pane" id="update">
+        <div class="well">
+          <form id="updatePromotionForm" class="form-horizontal">
+            <!-- Promotion ID (Required for Update) -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="update_promotion_id">Promotion ID:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="update_promotion_id" required
+                  placeholder="Enter ID of Promotion to Update">
+              </div>
+            </div>
+
+            <!-- Promotion Name (Optional)-->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="update_promotion_name">Name:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="update_promotion_name" placeholder="Update Promotion Name">
+              </div>
+            </div>
+
+            <!-- Promotion Description (Optional) -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="update_promotion_description">Description:</label>
+              <div class="col-sm-10">
+                <textarea class="form-control" id="update_promotion_description"
+                  placeholder="Update Description"></textarea>
+              </div>
+            </div>
+
+            <!-- Product IDs (Optional) -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="update_promotion_product_ids">Product IDs:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="update_promotion_product_ids"
+                  placeholder="Update Product IDs e.g. product_id1, product_id2">
+              </div>
+            </div>
+
+            <!-- Start Date (Optional) -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="update_promotion_start_date">Start Date:</label>
+              <div class="col-sm-10">
+                <input type="date" class="form-control" id="update_promotion_start_date"
+                  onchange="updateEndDateMin(this.value,'update')" placeholder="Update Start Date (Optional)">
+              </div>
+            </div>
+
+            <!-- End Date (Optional) -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="update_promotion_end_date">End Date:</label>
+              <div class="col-sm-10">
+                <input type="date" class="form-control" id="update_promotion_end_date"
+                  placeholder="Update End Date (Optional)" onchange="updateStartDateMax(this.value,'update')">
+              </div>
+            </div>
+
+            <!-- Active Status (Optional) -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="update_promotion_active_status">Active Status:</label>
+              <div class="col-sm-10">
+                <select class="form-control" id="update_promotion_active_status">
+                  <option value="">Select to Update...</option>
+                  <option value="true">Active</option>
+                  <option value="false">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Submission Button -->
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-warning">Update</button>
+                <button type="button" id="clear-create" class="btn btn-secondary"
+                  onclick="clearForm('update')">Clear</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="table-responsive col-md-12" id="promotion-data">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Product IDs</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Active Status</th>
+              <th>Creator</th>
+              <th>Updater</th>
+              <th>Created At</th>
+              <th>Updated At</th>
+              <th>Extra</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Dynamic content filled by JavaScript/AJAX upon search -->
+          </tbody>
+        </table>
+      </div>
+    </div> <!-- container -->
+
+    <footer>
+      <br><br>
+      <p>&copy; NYU DevOps Company 2022</p>
+    </footer>
+
+    <script type="text/javascript" src="static/js/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="static/js/bootstrap.min.js"></script>
+
+    <!-- YOUR REST API -->
+    <script type="text/javascript" src="static/js/rest_api.js"></script>
+
+
+    <!-- UTILS FUNCTION -->
+    <script type="text/javascript" src="static/js/utils.js"></script>
+
+</body>
+
+</html>

@@ -93,15 +93,11 @@ class TestPromotionResourceService(TestCase):
     ######################################################################
     #  P L A C E   T E S T   C A S E S   H E R E
     ######################################################################
-
     def test_index(self):
-        """It should call the home page"""
+        """It should serve the home page HTML"""
         resp = self.client.get("/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.get_json()
-        self.assertEqual(data["service_name"], "Promotion Service")
-        self.assertEqual(data["version"], "v1.0")
-        self.assertEqual(data["endpoint"], "/promotions")
+        self.assertIn(b"<title>Promotion Demo RESTful Service</title>", resp.data)
 
     # ----------------------------------------------------------
     # TEST READ
