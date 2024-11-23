@@ -344,7 +344,8 @@ class TestPromotionResourceService(TestCase):
         self.assertEqual(
             len(data), len(test_list_promos)
         )  # check first if number of promos equal the number stored in the DB
-
+        data = sorted(data, key=lambda x: x["name"])
+        test_list_promos = sorted(test_list_promos, key=lambda x: x.name)
         for i, promo in enumerate(test_list_promos):
             self.assertEqual(data[i]["name"], promo.name)
             self.assertEqual(data[i]["description"], promo.description)
