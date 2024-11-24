@@ -28,6 +28,15 @@ from service.common import status  # HTTP Status Codes
 from service.common.route_utils import check_content_type, parse_with_try
 
 
+############################################################
+# Health Endpoint
+############################################################
+@app.route("/health")
+def health():
+    """Health Status"""
+    return {"status": "OK"}, status.HTTP_200_OK
+
+
 ######################################################################
 # GET INDEX
 ######################################################################

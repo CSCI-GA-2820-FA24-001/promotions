@@ -99,6 +99,13 @@ class TestPromotionResourceService(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertIn(b"<title>Promotion Demo RESTful Service</title>", resp.data)
 
+    def test_health(self):
+        """It should get the health endpoint"""
+        resp = self.client.get("/health")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(data["status"], "OK")
+
     # ----------------------------------------------------------
     # TEST READ
     # ----------------------------------------------------------
