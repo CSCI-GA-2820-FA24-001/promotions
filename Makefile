@@ -66,6 +66,6 @@ cluster-rm: ## Remove a K3D Kubernetes cluster
 	k3d cluster delete $(CLUSTER)
 
 .PHONY: deploy
-depoy: ## Deploy the service on local Kubernetes
+deploy: ## Deploy the service on local Kubernetes
 	$(info Deploying service locally...)
 	kubectl apply -f k8s/
