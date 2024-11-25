@@ -1,0 +1,139 @@
+{
+    "clientName": "Thunder Client",
+    "collectionName": "sample",
+    "collectionId": "5fbb0a50-ccf5-4448-992f-f5acbbf91763",
+    "dateExported": "2024-11-11T22:20:38.726Z",
+    "version": "1.2",
+    "folders": [],
+    "requests": [
+        {
+            "_id": "d087237d-bf07-429e-843a-579f59e3b57d",
+            "colId": "5fbb0a50-ccf5-4448-992f-f5acbbf91763",
+            "containerId": "",
+            "name": "List All Promotions",
+            "url": "http://localhost:8080/promotions",
+            "method": "GET",
+            "sortNum": 20000,
+            "created": "2024-11-11T21:37:53.546Z",
+            "modified": "2024-11-11T21:45:09.087Z",
+            "headers": []
+        },
+        {
+            "_id": "dcbe5df2-933e-40a0-a8c1-24891ef5b994",
+            "colId": "5fbb0a50-ccf5-4448-992f-f5acbbf91763",
+            "containerId": "",
+            "name": "Create a Promotion",
+            "url": "http://localhost:8080/promotions",
+            "method": "POST",
+            "sortNum": 30000,
+            "created": "2024-11-11T21:45:18.568Z",
+            "modified": "2024-11-11T21:56:42.484Z",
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"product_ids\": [\n    1,\n    2,\n    3\n  ],\n  \"name\": \"New Promo\",\n  \"description\": \"This is a new promotion.\",\n  \"start_date\": \"2024-10-22T10:00:00Z\",\n  \"end_date\": \"2024-11-01T10:00:00Z\",\n  \"active_status\": true,\n  \"created_by\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"updated_by\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"extra\": {\n    \"discount\": \"20%\",\n    \"category\": \"Electronics\"\n  }\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "6dc70482-3324-40a3-82ec-788b74df370e",
+            "colId": "5fbb0a50-ccf5-4448-992f-f5acbbf91763",
+            "containerId": "",
+            "name": "List All Promotions with Query Filter",
+            "url": "http://localhost:8080/promotions?name=New Promo",
+            "method": "GET",
+            "sortNum": 30000,
+            "created": "2024-11-11T22:15:34.065Z",
+            "modified": "2024-11-11T22:17:16.829Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "name",
+                    "value": "New Promo",
+                    "isPath": false
+                }
+            ]
+        },
+        {
+            "_id": "a812195c-1a09-41d2-9a0a-1f335248382a",
+            "colId": "5fbb0a50-ccf5-4448-992f-f5acbbf91763",
+            "containerId": "",
+            "name": "Create a Promotion Copy",
+            "url": "http://localhost:8080/promotions",
+            "method": "POST",
+            "sortNum": 40000,
+            "created": "2024-11-11T21:57:19.686Z",
+            "modified": "2024-11-11T22:06:11.486Z",
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"product_ids\": [\n    1\n  ],\n  \"name\": \"New Promo 3\",\n  \"description\": \"This is a new promotion. #3\",\n  \"start_date\": \"2024-10-22T10:00:00Z\",\n  \"end_date\": \"2024-11-21T10:00:00Z\",\n  \"active_status\": true,\n  \"created_by\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"updated_by\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"extra\": {\n    \"discount\": \"20%\",\n    \"category\": \"Electronics\"\n  }\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "d4b582d7-1e4b-4193-a7a5-154858f5ab4b",
+            "colId": "5fbb0a50-ccf5-4448-992f-f5acbbf91763",
+            "containerId": "",
+            "name": "Update a Promotion",
+            "url": "http://localhost:8080/promotions/06a3b168-265e-4d63-8c4c-ddb2e27e1bb6",
+            "method": "PUT",
+            "sortNum": 50000,
+            "created": "2024-11-11T21:58:10.618Z",
+            "modified": "2024-11-11T22:01:38.990Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"product_ids\": [\n    1,\n    2,\n    3\n  ],\n  \"name\": \"New Promo\",\n  \"description\": \"This is a new promotion. This promotion has been updated\",\n  \"start_date\": \"2024-10-22T10:00:00Z\",\n  \"end_date\": \"2024-11-01T10:00:00Z\",\n  \"active_status\": true,\n  \"created_by\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"updated_by\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"extra\": {\n    \"discount\": \"20%\",\n    \"category\": \"Electronics\"\n  }\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "6a0896c9-1ece-4e5c-9fcc-2433f144a1a3",
+            "colId": "5fbb0a50-ccf5-4448-992f-f5acbbf91763",
+            "containerId": "",
+            "name": "Delete a Promotion",
+            "url": "",
+            "method": "GET",
+            "sortNum": 60000,
+            "created": "2024-11-11T22:07:37.761Z",
+            "modified": "2024-11-11T22:07:37.762Z",
+            "headers": []
+        },
+        {
+            "_id": "f0342222-c786-46c0-bfec-701994ac3d3d",
+            "colId": "5fbb0a50-ccf5-4448-992f-f5acbbf91763",
+            "containerId": "",
+            "name": "Activate a Promotion",
+            "url": "http://localhost:8080/promotions/000c79b1-4b10-4f71-91b2-e5d84ebce5be/activate",
+            "method": "PATCH",
+            "sortNum": 70000,
+            "created": "2024-11-11T22:10:25.317Z",
+            "modified": "2024-11-11T22:11:43.629Z",
+            "headers": []
+        },
+        {
+            "_id": "1b7518cc-e01b-4494-a714-53a3044ade96",
+            "colId": "5fbb0a50-ccf5-4448-992f-f5acbbf91763",
+            "containerId": "",
+            "name": "Deactivate a Promotion",
+            "url": "http://localhost:8080/promotions/000c79b1-4b10-4f71-91b2-e5d84ebce5be/deactivate",
+            "method": "PATCH",
+            "sortNum": 80000,
+            "created": "2024-11-11T22:11:52.832Z",
+            "modified": "2024-11-11T22:12:21.986Z",
+            "headers": []
+        }
+    ],
+    "ref": "cye-a4ciu5kMmqLLMgoFSakvmNwACihnvIb_9Z07egkDUgl5K5xDeUz8K3wm2cLkRCb8njMgsaTdDGNUahQ4bw"
+}
