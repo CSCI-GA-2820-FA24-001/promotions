@@ -74,16 +74,6 @@ $(function () {
     $('#createPromotionForm').on('submit', function (e) {
         e.preventDefault();  // Prevent default form submission behavior
 
-        // $("#promotion_name").val(res.name);
-        // $("#promotion_product_id").val(res.product_id);
-        // $("#promotion_start_date").val(res.start_date);
-        // $("#promotion_end_date").val(res.end_date);
-        // $("#promotion_date_range_start").val(res.date_range_start);
-        // $("#promotion_date_range_end").val(res.date_range_end);
-        // $("#promotion_active_status").val(res.active_status.toString());
-        // $("#promotion_creator").val(res.creator);
-        // $("#promotion_updater").val(res.updater);
-
         let id_prefix = "create_";
         
         let name = $(`#${id_prefix}promotion_name`).val();
@@ -94,6 +84,8 @@ $(function () {
         let creator = $(`#${id_prefix}promotion_creator`).val();
         let updater = $(`#${id_prefix}promotion_updater`).val();
         let extra = $(`#${id_prefix}promotion_extra`).val();
+
+        extra = extra === "" ? "{}" : extra;
 
         let data = {
             name,
@@ -119,7 +111,7 @@ $(function () {
         });
 
         ajax.fail(function(res){
-            flash_message(res.responseJSON.message)
+            flash_message(res.responseJSON.message.replace('"', ""))
         });
     });
 

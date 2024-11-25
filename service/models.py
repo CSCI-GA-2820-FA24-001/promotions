@@ -155,6 +155,11 @@ class Promotion(db.Model):
                 "Invalid Promotion: body of request contained bad or no data "
                 + str(error)
             ) from error
+        except ValueError as error:
+            raise DataValidationError(
+                "Invalid Promotion: body of request contained bad data type "
+                + str(error)
+            ) from error
         return self
 
     ##################################################

@@ -214,6 +214,13 @@ class TestPromotionResourceService(TestCase):
         response = self.client.post(BASE_URL)
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
+    def test_create_promotion_non_uuid_creator(self):
+        """It should raise 400"""
+        test_promotion = PromotionFactory()
+        test_promotion.created_by = "not uuid"
+        response = self.client.post(BASE_URL, json=test_promotion.serialize())
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     # ----------------------------------------------------------
     # TEST UPDATE
     # ----------------------------------------------------------
