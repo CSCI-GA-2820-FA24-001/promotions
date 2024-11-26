@@ -17,20 +17,6 @@ $(function () {
         $("#promotion_updater").val(res.updater);
     }
 
-    /// Clears all form fields
-    function clear_form_data() {
-        $("#promotion_id").val("");
-        $("#promotion_name").val("");
-        $("#promotion_product_id").val("");
-        $("#promotion_start_date").val("");
-        $("#promotion_end_date").val("");
-        $("#promotion_date_range_start").val("");
-        $("#promotion_date_range_end").val("");
-        $("#promotion_active_status").val("");
-        $("#promotion_creator").val("");
-        $("#promotion_updater").val("");
-    }
-
     // Updates the flash message area
     function flash_message(message) {
         $("#flash_message").empty();
@@ -46,7 +32,7 @@ $(function () {
             contentType: "application/json",
             data: JSON.stringify({ active_status: newStatus }),
             success: function () {
-                alert(`Promotion ${promotionId} successfully updated to ${newStatus ? "Active" : "Inactive"}`);
+                flash_message("Success");
                 
             },
             error: function (error) {
@@ -77,39 +63,41 @@ $(function () {
         }
     });
 
-    function render_promotion_data(promotion) {
-        let tableBody = $("#promotion-data tbody");
+    function render_promotion_data(promotions, table) {
+        let tableBody = $(`#${table} tbody`);
         tableBody.empty();  // Clear existing data
-        let activeText = promotion.active_status ? "Deactivate" : "Activate";
-        // Populate the table with the retrieved promotion data
-        let row = `
-            <tr id="row-${promotion.id}">
-                <td>${promotion.id}</td>
-                <td>${promotion.name}</td>
-                <td>${promotion.description}</td>
-                <td>${promotion.product_ids}</td>
-                <td>${promotion.start_date}</td>
-                <td>${promotion.end_date}</td>
-                <td class="status-cell">${promotion.active_status ? 'Active' : 'Inactive'} 
-                    <button 
-                        class="btn btn-sm btn-toggle" 
-                        id="toggle-btn"
-                        data-id="${promotion.id}" 
-                        data-status="${promotion.active_status}">
-                        ${activeText}
-                    </button>
-                </td>
-                <td>${promotion.creator}</td>
-                <td>${promotion.updater}</td>
-                <td>${promotion.created_at}</td>
-                <td>${promotion.updated_at}</td>
-                <td>${JSON.stringify(promotion.extra)}</td>
-                    
+        promotions.forEach(promotion => {
+            // Populate the table with the retrieved promotion data
+            let activeText = promotion.active_status ? "Deactivate" : "Activate";
+            const row = `
+                <tr id="row-${promotion.id}">
+                    <td>${promotion.id}</td>
+                    <td>${promotion.name}</td>
+                    <td>${promotion.description}</td>
+                    <td>${promotion.product_ids}</td>
+                    <td>${promotion.start_date}</td>
+                    <td>${promotion.end_date}</td>
+                    <td class="status-cell">${promotion.active_status ? 'Active' : 'Inactive'} 
+                        <button 
+                            class="btn btn-sm btn-toggle" 
+                            id="toggle-btn"
+                            data-id="${promotion.id}" 
+                            data-status="${promotion.active_status}">
+                            ${activeText}
+                        </button>
+                    </td>
+                    <td>${promotion.created_by}</td>
+                    <td>${promotion.updated_by}</td>
+                    <td>${promotion.created_at}</td>
+                    <td>${promotion.updated_at}</td>
+                    <td>${JSON.stringify(promotion.extra)}</td>
+                        
             </tr>
-        `;
-        tableBody.append(row);
+            `;
+            tableBody.append(row);
 
-        $(".btn-toggle").click(function () {
+        $("#promotion-data").on("click", ".btn-toggle", function () {
+            console.log('clicked')
             let promotionId = $(this).data("id");
             let currentStatus = $(this).data("status");
 
@@ -129,25 +117,10 @@ $(function () {
                 </button>
             `);
 
-            // Reattach the click event for the new button
-            statusCell.find(".btn-toggle").click(function () {
-                let updatedPromotionId = $(this).data("id");
-                let updatedStatus = $(this).data("status");
-                togglePromotionStatus(updatedPromotionId, updatedStatus);
-            });
             togglePromotionStatus(promotionId, currentStatus);
         });
+        })
     }
-
-
-    // ****************************************
-    // Clear the form
-    // ****************************************
-    $("#clear-btn").click(function () {
-        clear_form_data()
-        $("#flash_message").empty();
-    });
-
 
     // ****************************************
     // Create a Promotion
@@ -156,7 +129,7 @@ $(function () {
         e.preventDefault();  // Prevent default form submission behavior
 
         let id_prefix = "create_";
-        
+
         let name = $(`#${id_prefix}promotion_name`).val();
         let product_ids = $(`#${id_prefix}promotion_product_ids`).val();
         let start_date = $(`#${id_prefix}promotion_start_date`).val();
@@ -186,12 +159,12 @@ $(function () {
             data: JSON.stringify(data),
         });
 
-        ajax.done(function(res){
+        ajax.done(function (res) {
             update_form_data(res)
             flash_message("Success")
         });
 
-        ajax.fail(function(res){
+        ajax.fail(function (res) {
             flash_message(res.responseJSON.message.replace('"', ""))
         });
     });
@@ -213,15 +186,15 @@ $(function () {
             data: ''
         })
 
-        ajax.done(function(res){
+        ajax.done(function (res) {
             //alert(res.toSource())
             // update_form_data(res)
-            render_promotion_data(res);
+            render_promotion_data([res], 'promotion-data');
             flash_message("Success")
         });
 
-        ajax.fail(function(res){
-            clear_form_data()
+        ajax.fail(function (res) {
+            clearForm('retrieve')
             flash_message(res.responseJSON.message)
         });
     });
@@ -231,8 +204,90 @@ $(function () {
     // ****************************************
     $('#searchPromotionForm').on('submit', function (e) {
         e.preventDefault();  // Prevent default form submission behavior
-        // TODO : search promotions
+
+        // Retrieve form data
+        const id_prefix = "search_promotion_";
+
+        const name = $(`#${id_prefix}name`).val();
+        const product_id = $(`#${id_prefix}product_id`).val();
+
+
+        const created_by = $(`#${id_prefix}creator`).val();
+        const updated_by = $(`#${id_prefix}updater`).val();
+        const active_status = $(`#${id_prefix}active_status`).val();
+
+
+        const data = {
+            name,
+            product_id,
+            created_by,
+            updated_by,
+            active_status
+        };
+
+        for (const [key, value] of Object.entries(data)) {
+            if (!value) {
+                console.log('removed field:', key, value);
+                delete data[key];
+            }
+        }
+
+        // Check the current date type from the StateManager
+        const dateType = StateManager.getDateType();
+
+        const end_date = $(`#${id_prefix}end_date`).val();
+        const exact_match_end_date = $(`#${id_prefix}exact_match_end_date`).prop('checked');
+
+        const date_range_start = $(`#${id_prefix}date_range_start`).val();
+        const date_range_end = $(`#${id_prefix}date_range_end`).val();
+
+        const start_date = $(`#${id_prefix}start_date`).val();
+        const exact_match_start_date = $(`#${id_prefix}exact_match_start_date`).prop('checked');
+
+
+        switch (dateType) {
+            case 'start_date':
+                data.start_date = start_date;
+                data.exact_match_start_date = exact_match_start_date;
+                break;
+            case 'end_date':
+                data.end_date = end_date;
+                data.exact_match_end_date = exact_match_end_date;
+                break;
+            case 'date_range':
+                data.start_date = date_range_start;
+                data.end_date = date_range_end;
+                break;
+            default:
+                break;
+        }
+
+        console.log('data', data);
+
+        // Constructing query string from data object
+        const queryString = $.param(data);
+
+        const ajax = $.ajax({
+            type: "GET",
+            url: `/promotions?${queryString}`,
+            contentType: "application/json",
+        });
+
+        ajax.done(function (res) {
+            console.log('res', res);
+            render_promotion_data(res, 'search-promotion-data');
+            if (res.length === 0) {
+                flash_message("No promotions found");
+            } else {
+                flash_message("Search successful!");
+            }
+        });
+
+        ajax.fail(function (res) {
+            flash_message(res.responseJSON.message);
+        });
     });
+
 
     // ****************************************
     // Update A Promotion

@@ -248,6 +248,77 @@ class TestPromotion(TestCase):
             in str(context.exception)
         )
 
+    def test_promotion_deserialize_valid_product_ids_string(self):
+        """It should correctly parse a string of product IDs into a list"""
+        data = {
+            "name": "Summer Sale",
+            "start_date": "2024-06-01",
+            "end_date": "2024-06-15",
+            "active_status": True,
+            "created_by": str(uuid4()),
+            "updated_by": str(uuid4()),
+            "product_ids": "pd1, pd2, pd3",
+        }
+
+        promotion = PromotionFactory()
+        deserialized_promotion = promotion.deserialize(data)
+        self.assertEqual(deserialized_promotion.product_ids, ["pd1", "pd2", "pd3"])
+
+    def test_promotion_deserialize_valid_product_ids_list(self):
+        """It should correctly handle a list of product IDs"""
+        data = {
+            "name": "Winter Sale",
+            "start_date": "2024-12-01",
+            "end_date": "2024-12-15",
+            "active_status": True,
+            "created_by": str(uuid4()),
+            "updated_by": str(uuid4()),
+            "product_ids": ["pd1", "pd2", "pd3"],
+        }
+
+        promotion = PromotionFactory()
+        deserialized_promotion = promotion.deserialize(data)
+        self.assertEqual(deserialized_promotion.product_ids, ["pd1", "pd2", "pd3"])
+
+    def test_promotion_deserialize_invalid_product_ids_type(self):
+        """It should raise a DataValidationError when product_ids is neither a list nor a comma-separated string"""
+        data = {
+            "name": "Spring Sale",
+            "start_date": "2024-03-01",
+            "end_date": "2024-03-15",
+            "active_status": True,
+            "created_by": str(uuid4()),
+            "updated_by": str(uuid4()),
+            "product_ids": {"pd1", "pd2", "pd3"},  # Set instead of list or string
+        }
+
+        promotion = PromotionFactory()
+
+        # Assert that deserialization raises a DataValidationError for invalid product_ids type
+        with self.assertRaises(DataValidationError) as context:
+            promotion.deserialize(data)
+
+        self.assertTrue(
+            "Invalid product_ids: must be a list or comma-separated string"
+            in str(context.exception)
+        )
+
+    def test_promotion_deserialize_product_ids_absent(self):
+        """It should handle absence of product_ids gracefully by defaulting to an empty list"""
+        data = {
+            "name": "Autumn Sale",
+            "start_date": "2024-09-01",
+            "end_date": "2024-09-15",
+            "active_status": True,
+            "created_by": str(uuid4()),
+            "updated_by": str(uuid4()),
+            # 'product_ids' field is omitted
+        }
+
+        promotion = PromotionFactory()
+        deserialized_promotion = promotion.deserialize(data)
+        self.assertEqual(deserialized_promotion.product_ids, [])
+
     def test_find_by_name_success(self):
         """It should return promotions with the specified name"""
 
@@ -255,15 +326,15 @@ class TestPromotion(TestCase):
         promotion2 = PromotionFactory(name="Holiday Sale")
         promotion1.create()
         promotion2.create()
-
-        found_promotions = Promotion.find_by_name("Holiday Sale")
+        query = Promotion.query
+        found_promotions = Promotion.find_by_name(query, "Holiday Sale")
         self.assertEqual(found_promotions.count(), 1)
         self.assertEqual(found_promotions.first().name, "Holiday Sale")
 
     def test_find_by_name_not_found(self):
         """It should return an empty result when no promotions with the given name are found"""
-
-        found_promotions = Promotion.find_by_name("Non-existent Sale")
+        query = Promotion.query
+        found_promotions = Promotion.find_by_name(query, "Non-existent Sale")
         self.assertEqual(found_promotions.count(), 0)
 
     def test_find_by_product_id_success(self):
@@ -274,13 +345,17 @@ class TestPromotion(TestCase):
         promotion1.create()
         promotion2.create()
 
-        found_promotions = Promotion.find_by_product_id(product_id)
+        query = Promotion.query
+        found_promotions = Promotion.find_by_product_id(query, product_id).all()
         self.assertEqual(len(found_promotions), 1)
         self.assertIn(product_id, found_promotions[0].product_ids)
 
     def test_find_by_product_id_not_found(self):
         """It should return an empty list when no promotions contain the given product ID"""
-        found_promotions = Promotion.find_by_product_id("nonexistent123")
+
+        query = Promotion.query
+
+        found_promotions = Promotion.find_by_product_id(query, "nonexistent123").all()
         self.assertEqual(len(found_promotions), 0)
 
     def test_find_by_start_date_exact_match(self):
@@ -289,9 +364,10 @@ class TestPromotion(TestCase):
         promotion = PromotionFactory(start_date=exact_start_date)
         promotion.create()
 
+        query = Promotion.query
         found_promotions = Promotion.find_by_start_date(
-            exact_start_date, exact_match=True
-        )
+            query, exact_start_date, exact_match=True
+        ).all()
         self.assertEqual(len(found_promotions), 1)
         self.assertEqual(found_promotions[0].start_date, exact_start_date)
 
@@ -304,8 +380,10 @@ class TestPromotion(TestCase):
         )  # Starts 10 days later
         promotion1.create()
         promotion2.create()
-
-        found_promotions = Promotion.find_by_start_date(start_date, exact_match=False)
+        query = Promotion.query
+        found_promotions = Promotion.find_by_start_date(
+            query, start_date, exact_match=False
+        ).all()
         self.assertEqual(len(found_promotions), 2)
 
         promotion_dates = {promo.start_date for promo in found_promotions}
@@ -318,7 +396,10 @@ class TestPromotion(TestCase):
         promotion = PromotionFactory(start_date=start_date + timedelta(days=1))
         promotion.create()
 
-        found_promotions = Promotion.find_by_start_date(start_date, exact_match=True)
+        query = Promotion.query
+        found_promotions = Promotion.find_by_start_date(
+            query, start_date, exact_match=True
+        ).all()
         self.assertEqual(len(found_promotions), 0)
 
     def test_find_by_start_date_no_matches_on_or_after(self):
@@ -327,7 +408,10 @@ class TestPromotion(TestCase):
         promotion = PromotionFactory(start_date=start_date - timedelta(days=1))
         promotion.create()
 
-        found_promotions = Promotion.find_by_start_date(start_date, exact_match=False)
+        query = Promotion.query
+        found_promotions = Promotion.find_by_start_date(
+            query, start_date, exact_match=False
+        ).all()
         self.assertEqual(len(found_promotions), 0)
 
     def test_find_by_end_date_exact_match(self):
@@ -340,7 +424,10 @@ class TestPromotion(TestCase):
             end_date=datetime(2024, 1, 10),
         ).create()
 
-        found_promotions = Promotion.find_by_end_date(exact_end_date, exact_match=True)
+        query = Promotion.query
+        found_promotions = Promotion.find_by_end_date(
+            query, exact_end_date, exact_match=True
+        ).all()
         self.assertEqual(len(found_promotions), 1)
 
     def test_find_by_end_date_on_or_before(self):
@@ -357,7 +444,10 @@ class TestPromotion(TestCase):
             end_date=target_date,
         ).create()
 
-        found_promotions = Promotion.find_by_end_date(target_date, exact_match=False)
+        query = Promotion.query
+        found_promotions = Promotion.find_by_end_date(
+            query, target_date, exact_match=False
+        ).all()
         self.assertEqual(len(found_promotions), 2)
         promotion_names = {promo.name for promo in found_promotions}
         self.assertTrue("End of Year Sale" in promotion_names)
@@ -369,10 +459,11 @@ class TestPromotion(TestCase):
             end_date=datetime(2024, 1, 15),
         ).create()
 
+        query = Promotion.query
         non_existent_end_date = datetime(2024, 1, 14)
         found_promotions = Promotion.find_by_end_date(
-            non_existent_end_date, exact_match=True
-        )
+            query, non_existent_end_date, exact_match=True
+        ).all()
         self.assertEqual(len(found_promotions), 0)
 
     def test_find_by_end_date_no_matches_on_or_before(self):
@@ -382,7 +473,11 @@ class TestPromotion(TestCase):
         ).create()
 
         early_date = datetime(2024, 1, 15)
-        found_promotions = Promotion.find_by_end_date(early_date, exact_match=False)
+
+        query = Promotion.query
+        found_promotions = Promotion.find_by_end_date(
+            query, early_date, exact_match=False
+        ).all()
         self.assertEqual(len(found_promotions), 0)
 
     def test_find_by_date_range_success(self):
@@ -392,7 +487,11 @@ class TestPromotion(TestCase):
         promotion = PromotionFactory(start_date=start_date, end_date=end_date)
         promotion.create()
 
-        found_promotions = Promotion.find_by_date_range(start_date, end_date)
+        query = Promotion.query
+
+        found_promotions = Promotion.find_by_date_range(
+            query, start_date, end_date
+        ).all()
         self.assertEqual(len(found_promotions), 1)
         self.assertTrue(
             found_promotions[0].start_date >= start_date
@@ -409,7 +508,12 @@ class TestPromotion(TestCase):
 
         start_date = datetime.now()
         end_date = datetime.now() + timedelta(days=10)
-        found_promotions = Promotion.find_by_date_range(start_date, end_date)
+
+        query = Promotion.query
+
+        found_promotions = Promotion.find_by_date_range(
+            query, start_date, end_date
+        ).all()
         self.assertEqual(len(found_promotions), 0)
 
     def test_find_by_active_status_active(self):
@@ -418,8 +522,8 @@ class TestPromotion(TestCase):
         promotion2 = PromotionFactory(active_status=False)
         promotion1.create()
         promotion2.create()
-
-        active_promotions = Promotion.find_by_active_status(True)
+        query = Promotion.query
+        active_promotions = Promotion.find_by_active_status(query, True).all()
         self.assertEqual(len(active_promotions), 1)
         self.assertTrue(active_promotions[0].active_status)
 
@@ -427,8 +531,8 @@ class TestPromotion(TestCase):
         """It should return only inactive promotions"""
         promotion1 = PromotionFactory(active_status=False)
         promotion1.create()
-
-        inactive_promotions = Promotion.find_by_active_status(False)
+        query = Promotion.query
+        inactive_promotions = Promotion.find_by_active_status(query, False).all()
         self.assertEqual(len(inactive_promotions), 1)
         self.assertFalse(inactive_promotions[0].active_status)
 
@@ -447,8 +551,8 @@ class TestPromotion(TestCase):
         PromotionFactory(
             created_by=creator_id_2,
         ).create()
-
-        found_promotions = Promotion.find_by_creator(creator_id_1)
+        query = Promotion.query
+        found_promotions = Promotion.find_by_creator(query, creator_id_1).all()
         self.assertEqual(len(found_promotions), 2)
         self.assertTrue(
             all(promo.created_by == creator_id_1 for promo in found_promotions)
@@ -460,7 +564,9 @@ class TestPromotion(TestCase):
 
         PromotionFactory(created_by=uuid4()).create()  # Different user
 
-        found_promotions = Promotion.find_by_creator(non_existent_id)
+        query = Promotion.query
+
+        found_promotions = Promotion.find_by_creator(query, non_existent_id).all()
         self.assertEqual(len(found_promotions), 0)
 
     def test_find_by_updater(self):
@@ -479,7 +585,8 @@ class TestPromotion(TestCase):
             updated_by=updater_id_2,
         ).create()
 
-        found_promotions = Promotion.find_by_updater(updater_id_1)
+        query = Promotion.query
+        found_promotions = Promotion.find_by_updater(query, updater_id_1).all()
         self.assertEqual(len(found_promotions), 2)
         self.assertTrue(
             all(promo.updated_by == updater_id_1 for promo in found_promotions)
@@ -491,5 +598,6 @@ class TestPromotion(TestCase):
 
         PromotionFactory(updated_by=uuid4()).create()  # Different user
 
-        found_promotions = Promotion.find_by_updater(non_existent_id)
+        query = Promotion.query
+        found_promotions = Promotion.find_by_updater(query, non_existent_id).all()
         self.assertEqual(len(found_promotions), 0)

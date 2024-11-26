@@ -30,11 +30,13 @@
 
 
     <ul class="nav nav-tabs" role="tablist">
-      <li role="presentation" class="active"><a id="create_a_promotion-tab" href="#create" aria-controls="create" role="tab"
-          data-toggle="tab">Create A Promotion</a></li>
-      <li role="presentation"><a href="#search" aria-controls="search" role="tab" data-toggle="tab">Search
+      <li role="presentation" class="active"><a id="create_a_promotion-tab" href="#create" aria-controls="create"
+          role="tab" data-toggle="tab">Create A Promotion</a></li>
+      <li role="presentation"><a id="search_promotions-tab" href="#search" aria-controls="search" role="tab"
+          data-toggle="tab">Search
           Promotions</a></li>
-      <li role="presentation"><a id="retrieve_promotion-tab" href="#retrieve" aria-controls="retrieve" role="tab" data-toggle="tab">Retrieve
+      <li role="presentation"><a id="retrieve_promotion-tab" href="#retrieve" aria-controls="retrieve" role="tab"
+          data-toggle="tab">Retrieve
           Promotion</a></li>
       <li role="presentation"><a href="#delete" aria-controls="delete" role="tab" data-toggle="tab">Delete Promotion</a>
       </li>
@@ -171,10 +173,12 @@
               <label class="control-label col-sm-2" for="search_promotion_start_date">Start Date:</label>
               <div class="col-sm-10">
                 <input type="date" class="form-control" id="search_promotion_start_date"
-                  onchange="updateEndDateMin(this.value, 'search')">
+                  onchange="toggleActiveState('search_start_date')">
                 <div class="checkbox">
                   <label>
-                    <input type="checkbox" id="exact_match_start_date"> Search for promotions ending exactly on this
+                    <input type="checkbox" id="search_promotion_exact_match_start_date"> Search for promotions ending
+                    exactly on
+                    this
                     date
                   </label>
                 </div>
@@ -186,10 +190,12 @@
               <label class="control-label col-sm-2" for="search_promotion_end_date">End Date:</label>
               <div class="col-sm-10">
                 <input type="date" class="form-control" id="search_promotion_end_date"
-                  onchange="updateStartDateMax(this.value, 'search')">
+                  onchange="toggleActiveState('search_end_date')">
                 <div class="checkbox">
                   <label>
-                    <input type="checkbox" id="exact_match_end_date"> Search for promotions ending exactly on this date
+                    <input type="checkbox" id="search_promotion_exact_match_end_date"> Search for promotions ending
+                    exactly on
+                    this date
                   </label>
                 </div>
               </div>
@@ -248,12 +254,36 @@
             <!-- Submission Button for Search -->
             <div class="form-group">
               <div class="col-sm-offset-2 col-sm-10">
-                <button type="submit" class="btn btn-primary">Search</button>
+                <button type="submit" class="btn btn-primary" id="search-btn">Search</button>
                 <button type="button" id="clear-create" class="btn btn-secondary"
                   onclick="clearForm('search')">Clear</button>
               </div>
             </div>
           </form>
+        </div>
+
+        <div class="table-responsive col-md-12" id="search-promotion-data">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Product IDs</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Active Status</th>
+                <th>Creator</th>
+                <th>Updater</th>
+                <th>Created At</th>
+                <th>Updated At</th>
+                <th>Extra</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dynamic content filled by JavaScript/AJAX upon search -->
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -278,8 +308,31 @@
             </div>
           </form>
         </div>
-      </div>
 
+        <div class="table-responsive col-md-12" id="promotion-data">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Product IDs</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Active Status</th>
+                <th>Creator</th>
+                <th>Updater</th>
+                <th>Created At</th>
+                <th>Updated At</th>
+                <th>Extra</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dynamic content filled by JavaScript/AJAX upon search -->
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <!-- Delete Promotion Tab Pane -->
       <div role="tabpanel" class="tab-pane" id="delete">
@@ -386,30 +439,6 @@
           </form>
         </div>
       </div>
-
-      <div class="table-responsive col-md-12" id="promotion-data">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Description</th>
-              <th>Product IDs</th>
-              <th>Start Date</th>
-              <th>End Date</th>
-              <th>Active Status</th>
-              <th>Creator</th>
-              <th>Updater</th>
-              <th>Created At</th>
-              <th>Updated At</th>
-              <th>Extra</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Dynamic content filled by JavaScript/AJAX upon search -->
-          </tbody>
-        </table>
-      </div>
     </div> <!-- container -->
 
     <footer>
@@ -420,7 +449,10 @@
     <script type="text/javascript" src="static/js/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" src="static/js/bootstrap.min.js"></script>
 
-    <!-- YOUR REST API -->
+    <!--STATE MANAGEMENT -->
+    <script type="text/javascript" src="static/js/state_manager.js"></script>
+
+    <!-- REST API -->
     <script type="text/javascript" src="static/js/rest_api.js"></script>
 
 

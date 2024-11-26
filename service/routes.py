@@ -45,6 +45,7 @@ def index():
     """Base URL for our service"""
     return app.send_static_file("index.html")
 
+
 ######################################################################
 #  R E S T   A P I   E N D P O I N T S
 ######################################################################
@@ -168,54 +169,52 @@ def list_promotions():
     """
     app.logger.info("Request for a promotion list")
 
-    promos = []
+    query = Promotion.query
 
-    # Parse any arguments from the query string
-    name = request.args.get("name")
-    product_id = request.args.get("product_id")
-    start_date = request.args.get("start_date")
-    end_date = request.args.get("end_date")
-    start = parse_with_try(start_date)
-    end = parse_with_try(end_date)
-    exact_match = request.args.get("exact_match", "false").lower() in [
-        "true",
-        "yes",
-        "1",
-    ]
-    active_status = request.args.get("active_status")
-    created_by = request.args.get("created_by")
-    updated_by = request.args.get("updated_by")
+    # Handle Date filtering
+    start_date_str = request.args.get("start_date")
+    end_date_str = request.args.get("end_date")
 
-    if name:
-        app.logger.info("Find by name: %s", name)
-        promos = Promotion.find_by_name(name=name)
-    elif product_id:
-        app.logger.info("Find by product_id: %s", product_id)
-        promos = Promotion.find_by_product_id(product_id=product_id)
-    elif start and end:
-        app.logger.info("Find by date range: %s --- %s", start_date, end_date)
-        promos = Promotion.find_by_date_range(start_date=start, end_date=end)
-    elif start:
-        app.logger.info("Find by start_date: %s", start_date)
-        promos = Promotion.find_by_start_date(start_date=start, exact_match=exact_match)
-    elif end:
-        app.logger.info("Find by end_date: %s", end_date)
-        promos = Promotion.find_by_end_date(end_date=end, exact_match=exact_match)
-    elif active_status:
-        app.logger.info("Find by active_status: %s", active_status)
-        active_status_value = active_status.lower() in ["true", "yes", "1"]
-        promos = Promotion.find_by_active_status(active_status=active_status_value)
-    elif created_by:
-        app.logger.info("Find by creator: %s", created_by)
-        promos = Promotion.find_by_creator(user_id=created_by)
-    elif updated_by:
-        app.logger.info("Find by updater: %s", updated_by)
-        promos = Promotion.find_by_updater(user_id=updated_by)
-    else:
-        app.logger.info("Find all")
-        promos = Promotion.query.all()
+    start_date = parse_with_try(start_date_str)
+    end_date = parse_with_try(end_date_str)
 
-    result = [promotion.serialize() for promotion in promos]
+    if start_date and end_date:
+        query = Promotion.find_by_date_range(query, start_date, end_date)
+    elif start_date:
+        exact_match = request.args.get("exact_match_start_date", "false").lower() in [
+            "true",
+            "yes",
+            "1",
+        ]
+        query = Promotion.find_by_start_date(query, start_date, exact_match=exact_match)
+    elif end_date:
+        exact_match = request.args.get("exact_match_end_date", "false").lower() in [
+            "true",
+            "yes",
+            "1",
+        ]
+        query = Promotion.find_by_end_date(query, end_date, exact_match=exact_match)
+
+    # Other filtering
+    filter_handlers = {
+        "name": lambda val: Promotion.find_by_name(query, val),
+        "product_id": lambda val: Promotion.find_by_product_id(query, val),
+        "active_status": lambda val: Promotion.find_by_active_status(
+            query, val.lower() in ["true", "yes", "1"]
+        ),
+        "created_by": lambda val: Promotion.find_by_creator(query, user_id=val),
+        "updated_by": lambda val: Promotion.find_by_updater(query, user_id=val),
+    }
+
+    for key, handler in filter_handlers.items():
+        value = request.args.get(key)
+        if value:
+            app.logger.info(f"Applying filter by {key}: {value}")
+            query = handler(value)
+
+    # Execute the built query
+    promos = query.all()
+    result = [promo.serialize() for promo in promos]
     return jsonify(result), status.HTTP_200_OK
 
 
