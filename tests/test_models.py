@@ -248,6 +248,77 @@ class TestPromotion(TestCase):
             in str(context.exception)
         )
 
+    def test_promotion_deserialize_valid_product_ids_string(self):
+        """It should correctly parse a string of product IDs into a list"""
+        data = {
+            "name": "Summer Sale",
+            "start_date": "2024-06-01",
+            "end_date": "2024-06-15",
+            "active_status": True,
+            "created_by": str(uuid4()),
+            "updated_by": str(uuid4()),
+            "product_ids": "pd1, pd2, pd3",
+        }
+
+        promotion = PromotionFactory()
+        deserialized_promotion = promotion.deserialize(data)
+        self.assertEqual(deserialized_promotion.product_ids, ["pd1", "pd2", "pd3"])
+
+    def test_promotion_deserialize_valid_product_ids_list(self):
+        """It should correctly handle a list of product IDs"""
+        data = {
+            "name": "Winter Sale",
+            "start_date": "2024-12-01",
+            "end_date": "2024-12-15",
+            "active_status": True,
+            "created_by": str(uuid4()),
+            "updated_by": str(uuid4()),
+            "product_ids": ["pd1", "pd2", "pd3"],
+        }
+
+        promotion = PromotionFactory()
+        deserialized_promotion = promotion.deserialize(data)
+        self.assertEqual(deserialized_promotion.product_ids, ["pd1", "pd2", "pd3"])
+
+    def test_promotion_deserialize_invalid_product_ids_type(self):
+        """It should raise a DataValidationError when product_ids is neither a list nor a comma-separated string"""
+        data = {
+            "name": "Spring Sale",
+            "start_date": "2024-03-01",
+            "end_date": "2024-03-15",
+            "active_status": True,
+            "created_by": str(uuid4()),
+            "updated_by": str(uuid4()),
+            "product_ids": {"pd1", "pd2", "pd3"},  # Set instead of list or string
+        }
+
+        promotion = PromotionFactory()
+
+        # Assert that deserialization raises a DataValidationError for invalid product_ids type
+        with self.assertRaises(DataValidationError) as context:
+            promotion.deserialize(data)
+
+        self.assertTrue(
+            "Invalid product_ids: must be a list or comma-separated string"
+            in str(context.exception)
+        )
+
+    def test_promotion_deserialize_product_ids_absent(self):
+        """It should handle absence of product_ids gracefully by defaulting to an empty list"""
+        data = {
+            "name": "Autumn Sale",
+            "start_date": "2024-09-01",
+            "end_date": "2024-09-15",
+            "active_status": True,
+            "created_by": str(uuid4()),
+            "updated_by": str(uuid4()),
+            # 'product_ids' field is omitted
+        }
+
+        promotion = PromotionFactory()
+        deserialized_promotion = promotion.deserialize(data)
+        self.assertEqual(deserialized_promotion.product_ids, [])
+
     def test_find_by_name_success(self):
         """It should return promotions with the specified name"""
 
