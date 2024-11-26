@@ -25,10 +25,12 @@ For information on Waiting until elements are present in the HTML see:
     https://selenium-python.readthedocs.io/waits.html
 """
 import logging
+from datetime import datetime
 from behave import when, then  # pylint: disable=no-name-in-module
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions
+
 
 ID_PREFIX = "promotion_"
 ACTION_PREFIX = ""
@@ -152,15 +154,52 @@ def step_impl(context, tab):
 def step_impl(context, name):
     found = WebDriverWait(context.driver, context.wait_seconds).until(
         expected_conditions.text_to_be_present_in_element(
-            (By.ID, "search_results"), name
+            (By.ID, "promotion-data"), name
         )
     )
     assert found
 
 
+@then('I should see "{name}" in the search results')
+def step_impl(context, name):
+    found = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.text_to_be_present_in_element(
+            (By.ID, "search-promotion-data"), name
+        )
+    )
+    assert found
+
+
+@then(
+    'I should see the promotion "{promotion_name}" between "{start_date}" and "{end_date}" in the search results'
+)
+def step_impl(context, promotion_name, start_date, end_date):
+    table = context.driver.find_element(By.CSS_SELECTOR, "#search-promotion-data tbody")
+    rows = table.find_elements(By.TAG_NAME, "tr")  # Get all rows in the table body
+
+    start_date_dt = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
+    end_date_dt = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
+
+    found_promotion = False
+    for row in rows:
+        # ID | Name | Description | Product IDs | Start Date | End Date | Status | Creator | Updater | Created At | Updated At | Extra
+        columns = row.find_elements(By.TAG_NAME, "td")
+        name = columns[1].text
+        start = datetime.strptime(columns[4].text, "%Y-%m-%dT%H:%M:%S")
+        end = datetime.strptime(columns[5].text, "%Y-%m-%dT%H:%M:%S")
+
+        if name == promotion_name and start_date_dt == start and end_date_dt == end:
+            found_promotion = True
+            break
+
+    assert (
+        found_promotion
+    ), f"{promotion_name} not found between {start_date_dt} and {end_date_dt} in the search results."
+
+
 @then('I should not see "{name}" in the results')
 def step_impl(context, name):
-    element = context.driver.find_element(By.ID, "search_results")
+    element = context.driver.find_element(By.ID, "promotion-data")
     assert name not in element.text
 
 

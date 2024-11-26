@@ -499,7 +499,7 @@ class TestPromotionResourceService(TestCase):
         )
         response = self.client.get(
             BASE_URL,
-            query_string=f"start_date={quote_plus(test_start_date.isoformat())}&exact_match=true",
+            query_string=f"start_date={quote_plus(test_start_date.isoformat())}&exact_match_start_date=true",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
@@ -553,7 +553,7 @@ class TestPromotionResourceService(TestCase):
         )
         response = self.client.get(
             BASE_URL,
-            query_string=f"end_date={quote_plus(test_end_date.isoformat())}&exact_match=true",
+            query_string=f"end_date={quote_plus(test_end_date.isoformat())}&exact_match_end_date=true",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
