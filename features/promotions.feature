@@ -35,3 +35,14 @@ Scenario: Retrieve a Promotion
     And I set the "ID" to "550e8400-e29b-41d4-a716-446655440000"
     And I press the "Retrieve" button
     Then I should see the message "Success"
+
+Scenario: Toggle a Promotion Status
+    When I visit the "Home Page"
+    And I switch to the "Search Promotions" tab
+    And I set the "Name" to "Clearance Sale"
+    And I press the "Search" button
+    Then I should see the promotion "Clearance Sale" with "Inactive" Status in the search results
+    And I press the "Toggle" button
+    And I should see the promotion "Clearance Sale" with "Active" Status in the search results
+    And I press the "Toggle" button
+    And I should see the promotion "Clearance Sale" with "Inactive" Status in the search results

@@ -93,6 +93,7 @@ $(function () {
                 <td class="status-cell">${promotion.active_status ? 'Active' : 'Inactive'} 
                     <button 
                         class="btn btn-sm btn-toggle" 
+                        id="toggle-btn"
                         data-id="${promotion.id}" 
                         data-status="${promotion.active_status}">
                         ${activeText}
@@ -120,7 +121,8 @@ $(function () {
             statusCell.html(`
                 ${newStatusText} 
                 <button 
-                    class="btn btn-sm btn-toggle" 
+                    class="btn btn-sm btn-toggle"
+                    id="toggle-btn" 
                     data-id="${promotionId}" 
                     data-status="${newStatus}">
                     ${newButtonText}
