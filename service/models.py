@@ -9,7 +9,8 @@ import uuid
 from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import UUID, JSONB  # Import JSONB for PostgreSQL
-
+from sqlalchemy.orm import Query
+from sqlalchemy import func
 
 logger = logging.getLogger("flask.app")
 
@@ -138,14 +139,22 @@ class Promotion(db.Model):
             self.updated_by = uuid.UUID(data["updated_by"])  # Convert string to UUID
 
             # Optional fields (use `.get()` to avoid KeyError if not present)
-            self.product_ids = data.get("product_ids")
+            product_ids = data.get("product_ids")
+            if product_ids is not None:
+                if isinstance(product_ids, str):
+                    product_ids = [pid.strip() for pid in product_ids.split(",")]
+                elif not isinstance(product_ids, list):
+                    raise DataValidationError(
+                        "Invalid product_ids: must be a list or comma-separated string"
+                    )
+
+                self.product_ids = product_ids
+            else:
+                self.product_ids = []
+
             self.description = data.get("description")
             self.extra = data.get("extra")
 
-        # AttributeError is unlikely in the current implementation
-        # but might be needed in future if attribute access or method calls are added.
-        # except AttributeError as error:
-        #     raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:
             raise DataValidationError(
                 "Invalid Promotion: missing " + error.args[0]
@@ -179,30 +188,31 @@ class Promotion(db.Model):
         return cls.query.session.get(cls, by_id)
 
     @classmethod
-    def find_by_name(cls, name):
+    def find_by_name(cls, query, name) -> Query:
         """Returns all Promotions with the given name
 
         Args:
             name (string): the name of the Promotions you want to match
         """
         logger.info("Processing name query for %s ...", name)
-        return cls.query.filter(cls.name == name)
+        return query.filter(cls.name == name)
 
     @classmethod
-    def find_by_product_id(cls, product_id: str) -> list:
+    def find_by_product_id(cls, query, product_id: str) -> Query:
         """
         Returns all promotions that include the given product ID.
 
         Args:
             product_id (product_id): The product ID to match within the promotion's product_ids
         """
+
         logger.info("Processing product ID query for %s ...", product_id)
-        return cls.query.filter(cls.product_ids.contains([product_id])).all()
+        return query.filter(func.jsonb_exists(cls.product_ids, product_id))
 
     @classmethod
     def find_by_start_date(
-        cls, start_date: datetime, exact_match: bool = False
-    ) -> list:
+        cls, query, start_date: datetime, exact_match: bool = False
+    ) -> Query:
         """
         Returns promotions based on the start date. The behavior changes based on the `exact_match` flag.
 
@@ -218,12 +228,14 @@ class Promotion(db.Model):
             start_date,
         )
         if exact_match:
-            return cls.query.filter(cls.start_date == start_date).all()
+            return query.filter(cls.start_date == start_date)
 
-        return cls.query.filter(cls.start_date >= start_date).all()
+        return query.filter(cls.start_date >= start_date)
 
     @classmethod
-    def find_by_end_date(cls, end_date: datetime, exact_match: bool = False) -> list:
+    def find_by_end_date(
+        cls, query, end_date: datetime, exact_match: bool = False
+    ) -> Query:
         """
         Returns promotions based on the end date. The behavior changes based on the `exact_match` flag.
 
@@ -239,12 +251,14 @@ class Promotion(db.Model):
             end_date,
         )
         if exact_match:
-            return cls.query.filter(cls.end_date == end_date).all()
+            return query.filter(cls.end_date == end_date)
 
-        return cls.query.filter(cls.end_date <= end_date).all()
+        return query.filter(cls.end_date <= end_date)
 
     @classmethod
-    def find_by_date_range(cls, start_date: datetime, end_date: datetime) -> list:
+    def find_by_date_range(
+        cls, query, start_date: datetime, end_date: datetime
+    ) -> Query:
         """
         Returns all promotions within a specified date range.
 
@@ -255,12 +269,10 @@ class Promotion(db.Model):
         logger.info(
             "Processing date range query from %s to %s ...", start_date, end_date
         )
-        return cls.query.filter(
-            cls.start_date <= end_date, cls.end_date >= start_date
-        ).all()
+        return query.filter(cls.start_date <= end_date, cls.end_date >= start_date)
 
     @classmethod
-    def find_by_active_status(cls, active_status: bool) -> list:
+    def find_by_active_status(cls, query, active_status: bool) -> Query:
         """Returns all promotions by their active status.
         Args:
             active_status (boolean): True for active promotions, False otherwise
@@ -268,10 +280,10 @@ class Promotion(db.Model):
         logger.info(
             "Processing active status query for active_status=%s ...", active_status
         )
-        return cls.query.filter(cls.active_status == active_status).all()
+        return query.filter(cls.active_status == active_status)
 
     @classmethod
-    def find_by_creator(cls, user_id: uuid.UUID) -> list:
+    def find_by_creator(cls, query, user_id: uuid.UUID) -> Query:
         """
         Returns all promotions created by a specific user.
 
@@ -279,10 +291,10 @@ class Promotion(db.Model):
             user_id (UUID): The UUID of the user who created the promotions
         """
         logger.info("Processing creator query for user_id=%s ...", user_id)
-        return cls.query.filter(cls.created_by == user_id).all()
+        return query.filter(cls.created_by == user_id)
 
     @classmethod
-    def find_by_updater(cls, user_id: uuid.UUID) -> list:
+    def find_by_updater(cls, query, user_id: uuid.UUID) -> Query:
         """
         Returns all promotions last updated by a specific user.
 
@@ -290,4 +302,4 @@ class Promotion(db.Model):
             user_id (UUID): The UUID of the user who last updated the promotions
         """
         logger.info("Processing updater query for user_id=%s ...", user_id)
-        return cls.query.filter(cls.updated_by == user_id).all()
+        return query.filter(cls.updated_by == user_id)
