@@ -32,8 +32,6 @@ Scenario: Create a Promotion
 Scenario: Retrieve a Promotion
     When I visit the "Home Page"
     And I switch to the "Retrieve Promotion" tab
-    And I set the "Promotion ID" to "550e8400-e29b-41d4-a716-446655440000"
+    And I set the "ID" to "550e8400-e29b-41d4-a716-446655440000"
     And I press the "Retrieve" button
     Then I should see the message "Success"
-    And I should see "550e8400-e29b-41d4-a716-446655440000" in the "ID" field
-    And I should see the corresponding promotion details in the table

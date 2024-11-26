@@ -33,6 +33,7 @@ HTTP_204_NO_CONTENT = 204
 
 WAIT_TIMEOUT = 60
 
+
 @given("the following promotions")
 def step_impl(context):
     """Delete all promotions and load new ones"""
@@ -52,19 +53,20 @@ def step_impl(context):
     for row in context.table:
         print(row)
         payload = {
-            "id":row["id"],
+            "id": row["id"],
             "name": row["name"],
-            "start_date": row["start_date"], 
-            "end_date": row["end_date"],    
-            "active_status": row["active_status"].lower() == "true", 
-            "created_by": row["created_by"], 
-            "updated_by": row["updated_by"], 
+            "start_date": row["start_date"],
+            "end_date": row["end_date"],
+            "active_status": row["active_status"].lower() == "true",
+            "created_by": row["created_by"],
+            "updated_by": row["updated_by"],
             # Optional fields
             "description": row.get("description"),
-            "product_ids": row.get("product_ids"), 
-            "extra": row.get("extra"),            
+            "product_ids": row.get("product_ids"),
+            "extra": row.get("extra"),
         }
 
         # Create a new promotion
         create_resp = requests.post(rest_endpoint, json=payload, timeout=WAIT_TIMEOUT)
         expect(create_resp.status_code).equal_to(HTTP_201_CREATED)
+        context.last_created_uuid = create_resp.json()["id"]

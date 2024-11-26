@@ -159,7 +159,6 @@ $(function () {
 
         ajax.done(function(res){
             //alert(res.toSource())
-            console.log(res)
             // update_form_data(res)
             render_promotion_data(res);
             flash_message("Success")

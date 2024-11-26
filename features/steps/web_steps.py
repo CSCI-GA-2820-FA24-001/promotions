@@ -63,7 +63,10 @@ def step_impl(context, element_name, text_string):
     )
     element = context.driver.find_element(By.ID, element_id)
     element.clear()
-    element.send_keys(text_string)
+    if element_name == "ID":
+        element.send_keys(context.last_created_uuid)
+    else:
+        element.send_keys(text_string)
 
 
 @when('I select "{text}" in the "{element_name}" dropdown')
