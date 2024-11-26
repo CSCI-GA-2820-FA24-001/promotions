@@ -31,6 +31,7 @@ from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions
 
 ID_PREFIX = "promotion_"
+ACTION_PREFIX = ""
 
 
 @when('I visit the "Home Page"')
@@ -55,7 +56,11 @@ def step_impl(context, text_string):
 
 @when('I set the "{element_name}" to "{text_string}"')
 def step_impl(context, element_name, text_string):
-    element_id = ID_PREFIX + element_name.lower().replace(" ", "_")
+    element_id = (
+        ACTION_PREFIX
+        + ID_PREFIX
+        + get_id_from_element_name(element_name).lower().replace(" ", "_")
+    )
     element = context.driver.find_element(By.ID, element_id)
     element.clear()
     element.send_keys(text_string)
@@ -63,21 +68,33 @@ def step_impl(context, element_name, text_string):
 
 @when('I select "{text}" in the "{element_name}" dropdown')
 def step_impl(context, text, element_name):
-    element_id = ID_PREFIX + element_name.lower().replace(" ", "_")
+    element_id = (
+        ACTION_PREFIX
+        + ID_PREFIX
+        + get_id_from_element_name(element_name).lower().replace(" ", "_")
+    )
     element = Select(context.driver.find_element(By.ID, element_id))
     element.select_by_visible_text(text)
 
 
 @then('I should see "{text}" in the "{element_name}" dropdown')
 def step_impl(context, text, element_name):
-    element_id = ID_PREFIX + element_name.lower().replace(" ", "_")
+    element_id = (
+        ACTION_PREFIX
+        + ID_PREFIX
+        + get_id_from_element_name(element_name).lower().replace(" ", "_")
+    )
     element = Select(context.driver.find_element(By.ID, element_id))
     assert element.first_selected_option.text == text
 
 
 @then('the "{element_name}" field should be empty')
 def step_impl(context, element_name):
-    element_id = ID_PREFIX + element_name.lower().replace(" ", "_")
+    element_id = (
+        ACTION_PREFIX
+        + ID_PREFIX
+        + get_id_from_element_name(element_name).lower().replace(" ", "_")
+    )
     element = context.driver.find_element(By.ID, element_id)
     assert element.get_attribute("value") == ""
 
@@ -118,6 +135,14 @@ def step_impl(context, element_name):
 def step_impl(context, button):
     button_id = button.lower().replace(" ", "_") + "-btn"
     context.driver.find_element(By.ID, button_id).click()
+
+
+@when('I switch to the "{tab}" tab')
+def step_impl(context, tab):
+    global ACTION_PREFIX
+    ACTION_PREFIX = tab.lower().split(" ")[0] + "_"
+    tab_id = tab.lower().replace(" ", "_") + "-tab"
+    context.driver.find_element(By.ID, tab_id).click()
 
 
 @then('I should see "{name}" in the results')
@@ -173,3 +198,11 @@ def step_impl(context, element_name, text_string):
     )
     element.clear()
     element.send_keys(text_string)
+
+
+def get_id_from_element_name(element_name: str):
+    if element_name in ["Creator's UUID", "Updater's UUID"]:
+        element_name = element_name.split("'")[0]
+    elif element_name == "Additional MetaData":
+        element_name = "extra"
+    return element_name

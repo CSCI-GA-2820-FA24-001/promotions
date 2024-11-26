@@ -30,11 +30,11 @@
 
 
     <ul class="nav nav-tabs" role="tablist">
-      <li role="presentation" class="active"><a href="#create" aria-controls="create" role="tab"
+      <li role="presentation" class="active"><a id="create_a_promotion-tab" href="#create" aria-controls="create" role="tab"
           data-toggle="tab">Create A Promotion</a></li>
       <li role="presentation"><a href="#search" aria-controls="search" role="tab" data-toggle="tab">Search
           Promotions</a></li>
-      <li role="presentation"><a href="#retrieve" aria-controls="retrieve" role="tab" data-toggle="tab">Retrieve
+      <li role="presentation"><a id="retrieve_a_promotion-tab" href="#retrieve" aria-controls="retrieve" role="tab" data-toggle="tab">Retrieve
           Promotion</a></li>
       <li role="presentation"><a href="#delete" aria-controls="delete" role="tab" data-toggle="tab">Delete Promotion</a>
       </li>
@@ -135,7 +135,7 @@
             <!-- Submission Button -->
             <div class="form-group">
               <div class="col-sm-offset-2 col-sm-10">
-                <button type="submit" class="btn btn-success">Create</button>
+                <button type="submit" class="btn btn-success" id="create-btn">Create</button>
                 <button type="button" id="clear-create" class="btn btn-secondary"
                   onclick="clearForm('create')">Clear</button>
               </div>

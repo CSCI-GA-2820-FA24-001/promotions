@@ -73,7 +73,46 @@ $(function () {
     // ****************************************
     $('#createPromotionForm').on('submit', function (e) {
         e.preventDefault();  // Prevent default form submission behavior
-        // TODO : create a promotion
+
+        let id_prefix = "create_";
+        
+        let name = $(`#${id_prefix}promotion_name`).val();
+        let product_ids = $(`#${id_prefix}promotion_product_ids`).val();
+        let start_date = $(`#${id_prefix}promotion_start_date`).val();
+        let end_date = $(`#${id_prefix}promotion_end_date`).val();
+        let active_status = $(`#${id_prefix}promotion_active_status`).val() == "Active";
+        let creator = $(`#${id_prefix}promotion_creator`).val();
+        let updater = $(`#${id_prefix}promotion_updater`).val();
+        let extra = $(`#${id_prefix}promotion_extra`).val();
+
+        extra = extra === "" ? "{}" : extra;
+
+        let data = {
+            name,
+            product_ids: product_ids.split(",").map(_ => _.trim()),
+            start_date,
+            end_date,
+            active_status,
+            created_by: creator,
+            updated_by: updater,
+            extra: JSON.parse(extra),
+        };
+
+        let ajax = $.ajax({
+            type: "POST",
+            url: "/promotions",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+        });
+
+        ajax.done(function(res){
+            update_form_data(res)
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            flash_message(res.responseJSON.message.replace('"', ""))
+        });
     });
 
     // ****************************************
