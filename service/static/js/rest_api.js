@@ -59,6 +59,31 @@ $(function () {
         }
     });
 
+    function render_promotion_data(promotion) {
+        let tableBody = $("#promotion-data tbody");
+        tableBody.empty();  // Clear existing data
+
+        // Populate the table with the retrieved promotion data
+        let row = `
+            <tr>
+                <td>${promotion.id}</td>
+                <td>${promotion.name}</td>
+                <td>${promotion.description}</td>
+                <td>${promotion.product_ids}</td>
+                <td>${promotion.start_date}</td>
+                <td>${promotion.end_date}</td>
+                <td>${promotion.active_status ? 'Active' : 'Inactive'}</td>
+                <td>${promotion.creator}</td>
+                <td>${promotion.updater}</td>
+                <td>${promotion.created_at}</td>
+                <td>${promotion.updated_at}</td>
+                <td>${JSON.stringify(promotion.extra)}</td>
+            </tr>
+        `;
+        tableBody.append(row);
+    }
+
+
     // ****************************************
     // Clear the form
     // ****************************************
@@ -120,7 +145,29 @@ $(function () {
     // ****************************************
     $('#retrievePromotionForm').on('submit', function (e) {
         e.preventDefault();  // Prevent default form submission behavior
-        // TODO : retrieve a promotion
+        // retrieve a promotion
+        let promotion_id = $("#retrieve_promotion_id").val();
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "GET",
+            url: `/promotions/${promotion_id}`,
+            contentType: "application/json",
+            data: ''
+        })
+
+        ajax.done(function(res){
+            //alert(res.toSource())
+            // update_form_data(res)
+            render_promotion_data(res);
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            clear_form_data()
+            flash_message(res.responseJSON.message)
+        });
     });
 
     // ****************************************
