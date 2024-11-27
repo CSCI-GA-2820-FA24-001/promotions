@@ -96,7 +96,7 @@ $(function () {
             `;
             tableBody.append(row);
 
-        $("#promotion-data").on("click", ".btn-toggle", function () {
+        $(`#${table}`).on("click", ".btn-toggle", function () {
             console.log('clicked')
             let promotionId = $(this).data("id");
             let currentStatus = $(this).data("status");
