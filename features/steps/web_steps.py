@@ -197,6 +197,29 @@ def step_impl(context, promotion_name, start_date, end_date):
     ), f"{promotion_name} not found between {start_date_dt} and {end_date_dt} in the search results."
 
 
+@then(
+    'I should see the promotion "{promotion_name}" with "{status}" Status in the search results'
+)
+def step_impl(context, promotion_name, status):
+    table = context.driver.find_element(By.CSS_SELECTOR, "#search-promotion-data tbody")
+    rows = table.find_elements(By.TAG_NAME, "tr")  # Get all rows in the table body
+
+    found_promotion = False
+    for row in rows:
+        # ID | Name | Description | Product IDs | Start Date | End Date | Status | Creator | Updater | Created At | Updated At | Extra
+        columns = row.find_elements(By.TAG_NAME, "td")
+        name = columns[1].text
+        found_status = columns[6].text.split()[0]
+
+        if name == promotion_name and found_status == status:
+            found_promotion = True
+            break
+
+    assert (
+        found_promotion
+    ), f"{promotion_name} not found with {status} status in the search results. The status is {found_status}"
+
+
 @then('I should not see "{name}" in the results')
 def step_impl(context, name):
     element = context.driver.find_element(By.ID, "promotion-data")

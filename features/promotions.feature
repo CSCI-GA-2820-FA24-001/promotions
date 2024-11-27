@@ -36,6 +36,17 @@ Scenario: Retrieve a Promotion
     And I press the "Retrieve" button
     Then I should see the message "Success"
 
+Scenario: Toggle a Promotion Status
+    When I visit the "Home Page"
+    And I switch to the "Search Promotions" tab
+    And I set the "Name" to "Winter Sale"
+    And I press the "Search" button
+    Then I should see "Winter Sale" in the search results
+    And I should see the promotion "Winter Sale" with "Active" Status in the search results
+    When I press the "Toggle" button
+    Then I should see the message "Success"
+    And I should see the promotion "Winter Sale" with "Inactive" Status in the search results
+
 Scenario: Creating a Promotion with an Invalid Creator's UUID
     When I visit the "Home Page"
     And I switch to the "Create A Promotion" tab
@@ -88,12 +99,10 @@ Scenario: Searching promotions by multiple fields
     And I press the "Search" button
     Then I should see the promotion "Winter Sale" between "2024-12-01T00:00:00" and "2024-12-31T23:59:59" in the search results
 
-
-
 Scenario: Delete a Promotion
     When I visit the "Home Page"
     And I switch to the "Delete Promotion" tab
     And I set the "ID" to "550e8400-e29b-41d4-a716-446655440000"
     And I press the "Delete" button
-    Then I should see the message "Success"
+    Then I should see the message "Promotion has been Deleted!"
 
