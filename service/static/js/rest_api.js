@@ -303,7 +303,7 @@ $(function () {
         let start_date = $(`#${id_prefix}promotion_start_date`).val();
         let end_date = $(`#${id_prefix}promotion_end_date`).val();
         let created_by = $(`#${id_prefix}promotion_creator`).val();
-        let updated_by = $(`#${id_prefix}promotion_updator`).val();
+        let updated_by = $(`#${id_prefix}promotion_updater`).val();
         let active_status = $(`#${id_prefix}promotion_active_status`).val() == "Active";
 
         data = {
