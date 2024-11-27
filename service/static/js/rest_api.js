@@ -294,7 +294,58 @@ $(function () {
     // ****************************************
     $('#updatePromotionForm').on('submit', function (e) {
         e.preventDefault();  // Prevent default form submission behavior
-        // TODO : update a promotion
+        let id_prefix = "update_";
+
+        let promotion_id = $(`#${id_prefix}promotion_id`).val();
+        let name = $(`#${id_prefix}promotion_name`).val();
+        let description = $(`#${id_prefix}promotion_description`).val();
+        let product_ids = $(`#${id_prefix}promotion_product_ids`).val();
+        let start_date = $(`#${id_prefix}promotion_start_date`).val();
+        let end_date = $(`#${id_prefix}promotion_end_date`).val();
+        let created_by = $(`#${id_prefix}promotion_creator`).val();
+        let updated_by = $(`#${id_prefix}promotion_updater`).val();
+        let active_status = $(`#${id_prefix}promotion_active_status`).val() == "Active";
+
+        data = {
+            promotion_id,
+            name,
+            description,
+            start_date,
+            end_date,
+            active_status,
+            created_by,
+            updated_by,
+            product_ids
+        }
+        console.log(data)
+        // for (const [key, value] of Object.entries(data)) {
+        //     if (!value) {
+        //         console.log('removed field:', key, value);
+        //         delete data[key];
+        //     }
+        // }
+
+        $("#flash_message").empty();
+        let ajax = $.ajax({
+            type: "PUT",
+            url: `/promotions/${promotion_id}`,
+            contentType: "application/json",
+            data: JSON.stringify(data)
+        });
+
+        ajax.done(function (res) {
+            console.log('res', res);
+            if (res.length === 0) {
+                flash_message("No promotions found");
+            } else {
+                flash_message("Update successful!");
+            }
+        });
+
+        ajax.fail(function (res) {
+            clearForm('update')
+            flash_message(res.responseJSON.message)
+        });
     });
 
 

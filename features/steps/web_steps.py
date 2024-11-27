@@ -64,10 +64,18 @@ def step_impl(context, element_name, text_string):
         + get_id_from_element_name(element_name).lower().replace(" ", "_")
     )
     element = context.driver.find_element(By.ID, element_id)
-    element.clear()
+
     if element_name == "ID":
+        element.clear()
         element.send_keys(context.last_created_uuid)
+    elif element_name == "Active Status":
+        select = Select(element)
+        if text_string == "Active":
+            select.select_by_value("true")
+        elif text_string == "Inactive":
+            select.select_by_value("false")
     else:
+        element.clear()
         element.send_keys(text_string)
 
 
