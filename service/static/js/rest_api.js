@@ -355,7 +355,25 @@ $(function () {
     $('#deletePromotionForm').on('submit', function (e) {
         console.log('delete form');
         e.preventDefault();  // Prevent default form submission behavior
-        // TODO : delete a promotion
+
+        let promotion_id = $("#delete_promotion_id").val();
+
+        $("#flash_message").empty();
+        
+        let ajax = $.ajax({
+            type: "DELETE",
+            url: `/promotions/${promotion_id}`,
+            contentType: "application/json",
+        });
+
+        ajax.done(function(res){
+            flash_message("Promotion has been Deleted!");
+        });
+
+        ajax.fail(function(res){
+            clearForm('delete')
+            flash_message(res.responseJSON.message)
+        });
     });
 
-})
+});

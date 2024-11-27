@@ -129,4 +129,12 @@ Feature: The promotions service back-end
         And I press the "Update" button
         Then I should see the message "Update successful!"
 
-# TODO: Add sad path for update promotions when fixing backend logic
+     # TODO: Add sad path for update promotions when fixing backend logic
+
+    Scenario: Delete a Promotion
+        When I visit the "Home Page"
+        And I switch to the "Delete Promotion" tab
+        And I set the "ID" to "550e8400-e29b-41d4-a716-446655440000"
+        And I press the "Delete" button
+        Then I should see the message "Promotion has been Deleted!"
+
