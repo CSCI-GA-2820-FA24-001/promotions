@@ -23,6 +23,25 @@ $(function () {
         $("#flash_message").append(message);
     }
 
+    function togglePromotionStatus(promotionId, currentStatus) {
+        let newStatus = !currentStatus; 
+        let action = newStatus ? "activate" : "deactivate";
+        $.ajax({
+            type: "PATCH", 
+            url: `/promotions/${promotionId}/${action}`,
+            contentType: "application/json",
+            data: JSON.stringify({ active_status: newStatus }),
+            success: function () {
+                flash_message("Success");
+                
+            },
+            error: function (error) {
+                console.error("Error updating promotion:", error);
+                alert("Failed to update the promotion. Please try again.");
+            }
+        });
+    }
+
     // ****************************************
     // Init
     // ****************************************
@@ -47,26 +66,59 @@ $(function () {
     function render_promotion_data(promotions, table) {
         let tableBody = $(`#${table} tbody`);
         tableBody.empty();  // Clear existing data
-
         promotions.forEach(promotion => {
             // Populate the table with the retrieved promotion data
+            let activeText = promotion.active_status ? "Deactivate" : "Activate";
             const row = `
-                <tr>
+                <tr id="row-${promotion.id}">
                     <td>${promotion.id}</td>
                     <td>${promotion.name}</td>
                     <td>${promotion.description}</td>
                     <td>${promotion.product_ids}</td>
                     <td>${promotion.start_date}</td>
                     <td>${promotion.end_date}</td>
-                    <td>${promotion.active_status ? 'Active' : 'Inactive'}</td>
+                    <td class="status-cell">${promotion.active_status ? 'Active' : 'Inactive'} 
+                        <button 
+                            class="btn btn-sm btn-toggle" 
+                            id="toggle-btn"
+                            data-id="${promotion.id}" 
+                            data-status="${promotion.active_status}">
+                            ${activeText}
+                        </button>
+                    </td>
                     <td>${promotion.created_by}</td>
                     <td>${promotion.updated_by}</td>
                     <td>${promotion.created_at}</td>
                     <td>${promotion.updated_at}</td>
                     <td>${JSON.stringify(promotion.extra)}</td>
-                </tr>
+                        
+            </tr>
             `;
             tableBody.append(row);
+
+        $(`#${table}`).on("click", ".btn-toggle", function () {
+            console.log('clicked')
+            let promotionId = $(this).data("id");
+            let currentStatus = $(this).data("status");
+
+            let newStatus = !currentStatus;
+            let newStatusText = newStatus ? "Active" : "Inactive";
+            let newButtonText = newStatus ? "Deactivate" : "Activate";
+
+            let statusCell = $(this).closest(".status-cell");
+            statusCell.html(`
+                ${newStatusText} 
+                <button 
+                    class="btn btn-sm btn-toggle"
+                    id="toggle-btn" 
+                    data-id="${promotionId}" 
+                    data-status="${newStatus}">
+                    ${newButtonText}
+                </button>
+            `);
+
+            togglePromotionStatus(promotionId, currentStatus);
+        });
         })
     }
 
