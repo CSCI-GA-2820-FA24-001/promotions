@@ -126,10 +126,11 @@ def update_promotion(promotion_id):
 
     data = request.get_json()
     app.logger.info(f"Processing update with data: {data}")
-
+    app.logger.info(promotion)
     promotion.deserialize(data)
 
     promotion.update()
+    
     app.logger.info(f"Promotion with ID [{promotion_id}] updated successfully.")
 
     return jsonify(promotion.serialize()), status.HTTP_200_OK
