@@ -20,8 +20,8 @@ Feature: The promotions service back-end
         And I set the "Name" to "Black Friday Sale"
         And I set the "Description" to "Description For Black Friday Sale"
         And I set the "Product IDs" to "123, 234, 345"
-        And I set the "Start Date" to "11-24-2024"
-        And I set the "End Date" to "11-30-2024"
+        And I set the "Start Date" to "2024-11-24"
+        And I set the "End Date" to "2024-11-30"
         And I select "Active" in the "Active Status" dropdown
         And I set the "Creator's UUID" to "a6fe4a43-dc08-471c-9d33-ebacff755f88"
         And I set the "Updater's UUID" to "a6fe4a43-dc08-471c-9d33-ebacff755f88"
@@ -42,8 +42,8 @@ Feature: The promotions service back-end
         And I set the "Name" to "Cyber Monday Deal"
         And I set the "Description" to "Huge discounts on all electronics"
         And I set the "Product IDs" to "456, 567, 678"
-        And I set the "Start Date" to "11-27-2024"
-        And I set the "End Date" to "12-03-2024"
+        And I set the "Start Date" to "2024-11-27"
+        And I set the "End Date" to "2024-12-03"
         And I select "Active" in the "Active Status" dropdown
         And I set the "Creator's UUID" to "invalid-uuid-format"
         And I set the "Updater's UUID" to "a6fe4a43-dc08-471c-9d33-ebacff755f88"
@@ -123,8 +123,8 @@ Feature: The promotions service back-end
         And I set the "Name" to "not_free"
         And I set the "Description" to "sss"
         And I set the "Product IDs" to "prod_3"
-        And I set the "Start Date" to "11/12/2024"
-        And I set the "End Date" to "11/25/2024"
+        And I set the "Start Date" to "2024-11-12"
+        And I set the "End Date" to "2024-11-25"
         And I set the "Active Status" to "Inactive"
         And I press the "Update" button
         Then I should see the message "Update successful!"
