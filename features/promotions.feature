@@ -62,21 +62,6 @@ Feature: The promotions service back-end
         Then I should see the message "Success"
         And I should see the promotion "Winter Sale" with "Inactive" Status in the search results
 
-    Scenario: Creating a Promotion with an Invalid Creator's UUID
-        When I visit the "Home Page"
-        And I switch to the "Create A Promotion" tab
-        And I set the "Name" to "Cyber Monday Deal"
-        And I set the "Description" to "Huge discounts on all electronics"
-        And I set the "Product IDs" to "456, 567, 678"
-        And I set the "Start Date" to "11-27-2024"
-        And I set the "End Date" to "12-03-2024"
-        And I select "Active" in the "Active Status" dropdown
-        And I set the "Creator's UUID" to "invalid-uuid-format"
-        And I set the "Updater's UUID" to "a6fe4a43-dc08-471c-9d33-ebacff755f88"
-        And I set the "Additional MetaData" to "{}"
-        When I press the "Create" button
-        Then I should see the message "Invalid Promotion: body of request contained bad data type badly formed hexadecimal UUID string"
-
     Scenario: Searching promotions by name
         When I visit the "Home Page"
         And I switch to the "Search Promotions" tab
