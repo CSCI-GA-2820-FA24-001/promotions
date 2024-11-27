@@ -56,6 +56,18 @@ def step_impl(context, text_string):
     assert text_string not in element.text
 
 
+@when("I set the ID with last created UUID")
+def step_impl(context):
+    element_id = (
+        ACTION_PREFIX
+        + ID_PREFIX
+        + get_id_from_element_name("id").lower().replace(" ", "_")
+    )
+    element = context.driver.find_element(By.ID, element_id)
+    element.clear()
+    element.send_keys(context.last_created_uuid)
+
+
 @when('I set the "{element_name}" to "{text_string}"')
 def step_impl(context, element_name, text_string):
     element_id = (
@@ -65,10 +77,7 @@ def step_impl(context, element_name, text_string):
     )
     element = context.driver.find_element(By.ID, element_id)
 
-    if element_name == "ID":
-        element.clear()
-        element.send_keys(context.last_created_uuid)
-    elif element_name == "Active Status":
+    if element_name == "Active Status":
         select = Select(element)
         if text_string == "Active":
             select.select_by_value("true")
@@ -158,7 +167,7 @@ def step_impl(context, tab):
     context.driver.find_element(By.ID, tab_id).click()
 
 
-@then('I should see "{name}" in the results')
+@then('I should see "{name}" in the search results')
 def step_impl(context, name):
     found = WebDriverWait(context.driver, context.wait_seconds).until(
         expected_conditions.text_to_be_present_in_element(
@@ -168,21 +177,11 @@ def step_impl(context, name):
     assert found
 
 
-@then('I should see "{name}" in the search results')
-def step_impl(context, name):
-    found = WebDriverWait(context.driver, context.wait_seconds).until(
-        expected_conditions.text_to_be_present_in_element(
-            (By.ID, "search-promotion-data"), name
-        )
-    )
-    assert found
-
-
 @then(
     'I should see the promotion "{promotion_name}" between "{start_date}" and "{end_date}" in the search results'
 )
 def step_impl(context, promotion_name, start_date, end_date):
-    table = context.driver.find_element(By.CSS_SELECTOR, "#search-promotion-data tbody")
+    table = context.driver.find_element(By.CSS_SELECTOR, "#promotion-data tbody")
     rows = table.find_elements(By.TAG_NAME, "tr")  # Get all rows in the table body
 
     start_date_dt = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
@@ -209,7 +208,7 @@ def step_impl(context, promotion_name, start_date, end_date):
     'I should see the promotion "{promotion_name}" with "{status}" Status in the search results'
 )
 def step_impl(context, promotion_name, status):
-    table = context.driver.find_element(By.CSS_SELECTOR, "#search-promotion-data tbody")
+    table = context.driver.find_element(By.CSS_SELECTOR, "#promotion-data tbody")
     rows = table.find_elements(By.TAG_NAME, "tr")  # Get all rows in the table body
 
     found_promotion = False

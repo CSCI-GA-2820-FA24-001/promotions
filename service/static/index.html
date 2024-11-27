@@ -35,10 +35,9 @@
       <li role="presentation"><a id="search_promotions-tab" href="#search" aria-controls="search" role="tab"
           data-toggle="tab">Search
           Promotions</a></li>
-      <li role="presentation"><a id="retrieve_promotion-tab" href="#retrieve" aria-controls="retrieve" role="tab"
-          data-toggle="tab">Retrieve
-          Promotion</a></li>
-      <li role="presentation"><a id="delete_promotion-tab" href="#delete" aria-controls="delete" role="tab" data-toggle="tab">Delete Promotion</a>
+
+      <li role="presentation"><a id="delete_promotion-tab" href="#delete" aria-controls="delete" role="tab"
+          data-toggle="tab">Delete Promotion</a>
       </li>
       <li role="presentation"><a href="#update" aria-controls="update" role="tab" data-toggle="tab"
           id="update_a_promotion-tab">Update A
@@ -152,6 +151,15 @@
       <div role="tabpanel" class="tab-pane" id="search">
         <div class="well">
           <form id="searchPromotionForm" class="form-horizontal">
+
+            <!-- Search by Promotion ID -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="search_promotion_id">Promotion ID:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="search_promotion_id" placeholder="Search by Promotion ID">
+              </div>
+            </div>
+
             <!-- Search by Promotion Name -->
             <div class="form-group">
               <label class="control-label col-sm-2" for="search_promotion_name">Name:</label>
@@ -264,53 +272,6 @@
           </form>
         </div>
 
-        <div class="table-responsive col-md-12" id="search-promotion-data">
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Product IDs</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Active Status</th>
-                <th>Creator</th>
-                <th>Updater</th>
-                <th>Created At</th>
-                <th>Updated At</th>
-                <th>Extra</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Dynamic content filled by JavaScript/AJAX upon search -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Retrieve Promotion Tab Pane -->
-      <div role="tabpanel" class="tab-pane" id="retrieve">
-        <div class="well">
-          <form id="retrievePromotionForm" class="form-horizontal">
-            <div class="form-group">
-              <label class="control-label col-sm-2" for="retrieve_promotion_id">Promotion ID:</label>
-              <div class="col-sm-10">
-                <input type="text" class="form-control" id="retrieve_promotion_id"
-                  placeholder="Enter ID of Promotion to Retrieve">
-              </div>
-            </div>
-
-            <div class="form-group">
-              <div class="col-sm-offset-2 col-sm-10 d-flex gap-2">
-                <button type="submit" class="btn btn-primary" id="retrieve-btn">Retrieve</button>
-                <button type="button" id="clear-retrieve" class="btn btn-secondary"
-                  onclick="clearForm('retrieve')">Clear</button>
-              </div>
-            </div>
-          </form>
-        </div>
-
         <div class="table-responsive col-md-12" id="promotion-data">
           <table class="table table-striped">
             <thead>
@@ -359,33 +320,19 @@
         </div>
       </div>
 
-
-
-      <!-- Update Promotion Tab Pane -->
+      <!-- Combined Retrieve and Update Promotion Tab Pane -->
       <div role="tabpanel" class="tab-pane" id="update">
         <div class="well">
           <form id="updatePromotionForm" class="form-horizontal">
             <!-- Promotion ID (Required for Update) -->
             <div class="form-group">
               <label class="control-label col-sm-2" for="update_promotion_id">Promotion ID:</label>
-              <div class="col-sm-10">
+              <div class="col-sm-6">
                 <input type="text" class="form-control" id="update_promotion_id" required
                   placeholder="Enter ID of Promotion to Update">
               </div>
-            </div>
-
-            <!-- creator UUID -->
-            <div class="form-group">
-              <label class="control-label col-sm-2" for="update_promotion_creator">Creator's UUID:</label>
-              <div class="col-sm-10">
-                <input type="text" class="form-control" id="update_promotion_creator" placeholder="Update Creator UUID">
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="control-label col-sm-2" for="update_promotion_updater">Updated by UUID:</label>
-              <div class="col-sm-10">
-                <input type="text" class="form-control" id="update_promotion_updater" placeholder="Updated by UUID">
+              <div class="col-sm-4">
+                <button type="submit" class="btn btn-primary" id="retrieve-btn">Retrieve</button>
               </div>
             </div>
 
@@ -442,6 +389,15 @@
                   <option value="true">Active</option>
                   <option value="false">Inactive</option>
                 </select>
+              </div>
+            </div>
+
+            <!-- Additional Metadata (JSON) -->
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="update_promotion_extra">Additional Metadata:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="update_promotion_extra"
+                  placeholder="Enter Additional Metadata as JSON">
               </div>
             </div>
 

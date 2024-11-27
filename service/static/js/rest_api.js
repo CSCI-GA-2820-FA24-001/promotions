@@ -3,20 +3,6 @@ $(function () {
     //  U T I L I T Y   F U N C T I O N S
     // ****************************************
 
-    // Updates the form with data from the response
-    function update_form_data(res) {
-        $("#promotion_id").val(res.id);
-        $("#promotion_name").val(res.name);
-        $("#promotion_product_id").val(res.product_id);
-        $("#promotion_start_date").val(res.start_date);
-        $("#promotion_end_date").val(res.end_date);
-        $("#promotion_date_range_start").val(res.date_range_start);
-        $("#promotion_date_range_end").val(res.date_range_end);
-        $("#promotion_active_status").val(res.active_status.toString());
-        $("#promotion_creator").val(res.creator);
-        $("#promotion_updater").val(res.updater);
-    }
-
     // Updates the flash message area
     function flash_message(message) {
         $("#flash_message").empty();
@@ -24,16 +10,15 @@ $(function () {
     }
 
     function togglePromotionStatus(promotionId, currentStatus) {
-        let newStatus = !currentStatus; 
+        let newStatus = !currentStatus;
         let action = newStatus ? "activate" : "deactivate";
         $.ajax({
-            type: "PATCH", 
+            type: "PATCH",
             url: `/promotions/${promotionId}/${action}`,
             contentType: "application/json",
             data: JSON.stringify({ active_status: newStatus }),
             success: function () {
                 flash_message("Success");
-                
             },
             error: function (error) {
                 console.error("Error updating promotion:", error);
@@ -42,28 +27,7 @@ $(function () {
         });
     }
 
-    // ****************************************
-    // Init
-    // ****************************************
-    $('#promotion-data').hide();
-
-
-    // ****************************************
-    // Tab Event Handler 
-    // ****************************************
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-        var activeTab = $(e.target).attr('href'); // Get the current active tab
-
-        const tabsToShowTable = ['#search', '#retrieve'];
-
-        if (tabsToShowTable.includes(activeTab)) {
-            $('#promotion-data').show();
-        } else {
-            $('#promotion-data').hide();
-        }
-    });
-
-    function render_promotion_data(promotions, table) {
+    function renderPromotionData(promotions, table) {
         let tableBody = $(`#${table} tbody`);
         tableBody.empty();  // Clear existing data
         promotions.forEach(promotion => {
@@ -96,17 +60,17 @@ $(function () {
             `;
             tableBody.append(row);
 
-        $(`#${table}`).on("click", ".btn-toggle", function () {
-            console.log('clicked')
-            let promotionId = $(this).data("id");
-            let currentStatus = $(this).data("status");
+            $(`#${table}`).on("click", ".btn-toggle", function () {
+                console.log('clicked')
+                let promotionId = $(this).data("id");
+                let currentStatus = $(this).data("status");
 
-            let newStatus = !currentStatus;
-            let newStatusText = newStatus ? "Active" : "Inactive";
-            let newButtonText = newStatus ? "Deactivate" : "Activate";
+                let newStatus = !currentStatus;
+                let newStatusText = newStatus ? "Active" : "Inactive";
+                let newButtonText = newStatus ? "Deactivate" : "Activate";
 
-            let statusCell = $(this).closest(".status-cell");
-            statusCell.html(`
+                let statusCell = $(this).closest(".status-cell");
+                statusCell.html(`
                 ${newStatusText} 
                 <button 
                     class="btn btn-sm btn-toggle"
@@ -117,8 +81,8 @@ $(function () {
                 </button>
             `);
 
-            togglePromotionStatus(promotionId, currentStatus);
-        });
+                togglePromotionStatus(promotionId, currentStatus);
+            });
         })
     }
 
@@ -160,7 +124,6 @@ $(function () {
         });
 
         ajax.done(function (res) {
-            update_form_data(res)
             flash_message("Success")
         });
 
@@ -172,10 +135,13 @@ $(function () {
     // ****************************************
     // Retrieve a Promotion
     // ****************************************
-    $('#retrievePromotionForm').on('submit', function (e) {
+    $('#retrieve-btn').on('click', function (e) {
         e.preventDefault();  // Prevent default form submission behavior
+
         // retrieve a promotion
-        let promotion_id = $("#retrieve_promotion_id").val();
+        let promotion_id = $("#update_promotion_id").val();
+
+        console.log(`retrieve promotion with id ${promotion_id}`);
 
         $("#flash_message").empty();
 
@@ -187,14 +153,15 @@ $(function () {
         })
 
         ajax.done(function (res) {
-            //alert(res.toSource())
-            // update_form_data(res)
-            render_promotion_data([res], 'promotion-data');
+            console.log('retrieve res', res);
+            StateManager.setCreator(res.created_by);
+            StateManager.setUpdater(res.updated_by);
+            $('#update_promotion_id').prop('disabled', true);
+            updateFormData(res, 'update-fill');
             flash_message("Success")
         });
 
         ajax.fail(function (res) {
-            clearForm('retrieve')
             flash_message(res.responseJSON.message)
         });
     });
@@ -207,6 +174,8 @@ $(function () {
 
         // Retrieve form data
         const id_prefix = "search_promotion_";
+
+        const id = $(`#${id_prefix}id`).val();
 
         const name = $(`#${id_prefix}name`).val();
         const product_id = $(`#${id_prefix}product_id`).val();
@@ -264,18 +233,22 @@ $(function () {
 
         console.log('data', data);
 
-        // Constructing query string from data object
-        const queryString = $.param(data);
+        const baseUrl = id ? `/promotions/${id}` : '/promotions';
+        const queryString = id ? '' : $.param(data);  // Only add query string if not searching by ID
+
 
         const ajax = $.ajax({
             type: "GET",
-            url: `/promotions?${queryString}`,
+            url: `${baseUrl}?${queryString}`,
             contentType: "application/json",
         });
 
         ajax.done(function (res) {
-            console.log('res', res);
-            render_promotion_data(res, 'search-promotion-data');
+            if (!Array.isArray(res)) {
+                res = [res]; // Wrap the single object in an array
+            }
+
+            renderPromotionData(res, 'promotion-data');
             if (res.length === 0) {
                 flash_message("No promotions found");
             } else {
@@ -297,14 +270,17 @@ $(function () {
         let id_prefix = "update_";
 
         let promotion_id = $(`#${id_prefix}promotion_id`).val();
-        let name = $(`#${id_prefix}promotion_name`).val();
-        let description = $(`#${id_prefix}promotion_description`).val();
-        let product_ids = $(`#${id_prefix}promotion_product_ids`).val();
+        let name = $(`#${id_prefix}promotion_name`).val().trim();
+        let description = $(`#${id_prefix}promotion_description`).val().trim();
+        let product_ids = $(`#${id_prefix}promotion_product_ids`).val().trim();
         let start_date = $(`#${id_prefix}promotion_start_date`).val();
         let end_date = $(`#${id_prefix}promotion_end_date`).val();
-        let created_by = $(`#${id_prefix}promotion_creator`).val();
-        let updated_by = $(`#${id_prefix}promotion_updater`).val();
+        let created_by = StateManager.getCreator();
+        let updated_by = StateManager.getUpdater();
         let active_status = $(`#${id_prefix}promotion_active_status`).val() == "Active";
+        let extra = $(`#${id_prefix}promotion_extra`).val().trim();
+
+        extra = extra === "" ? "{}" : extra;
 
         data = {
             promotion_id,
@@ -315,15 +291,18 @@ $(function () {
             active_status,
             created_by,
             updated_by,
-            product_ids
+            product_ids,
+            extra: JSON.parse(extra),
         }
-        console.log(data)
-        // for (const [key, value] of Object.entries(data)) {
-        //     if (!value) {
-        //         console.log('removed field:', key, value);
-        //         delete data[key];
-        //     }
-        // }
+
+        for (const [key, value] of Object.entries(data)) {
+            if (value !== false && !value) {
+                console.log('removed field:', key, value);
+                delete data[key];
+            }
+        }
+
+        console.log('updated data', data);
 
         $("#flash_message").empty();
         let ajax = $.ajax({
@@ -334,16 +313,11 @@ $(function () {
         });
 
         ajax.done(function (res) {
-            console.log('res', res);
-            if (res.length === 0) {
-                flash_message("No promotions found");
-            } else {
-                flash_message("Update successful!");
-            }
+            console.log('updated res', res);
+            flash_message("Update successful!");
         });
 
         ajax.fail(function (res) {
-            clearForm('update')
             flash_message(res.responseJSON.message)
         });
     });
@@ -353,24 +327,23 @@ $(function () {
     // Delete a Promotion
     // ****************************************
     $('#deletePromotionForm').on('submit', function (e) {
-        console.log('delete form');
         e.preventDefault();  // Prevent default form submission behavior
 
         let promotion_id = $("#delete_promotion_id").val();
 
         $("#flash_message").empty();
-        
+
         let ajax = $.ajax({
             type: "DELETE",
             url: `/promotions/${promotion_id}`,
             contentType: "application/json",
         });
 
-        ajax.done(function(res){
+        ajax.done(function (res) {
             flash_message("Promotion has been Deleted!");
         });
 
-        ajax.fail(function(res){
+        ajax.fail(function (res) {
             clearForm('delete')
             flash_message(res.responseJSON.message)
         });

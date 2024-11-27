@@ -29,13 +29,6 @@ Feature: The promotions service back-end
         And I press the "Create" button
         Then I should see the message "Success"
 
-    Scenario: Retrieve a Promotion
-        When I visit the "Home Page"
-        And I switch to the "Retrieve Promotion" tab
-        And I set the "ID" to "550e8400-e29b-41d4-a716-446655440000"
-        And I press the "Retrieve" button
-        Then I should see the message "Success"
-
     Scenario: Creating a Promotion with an Invalid Creator's UUID
         When I visit the "Home Page"
         And I switch to the "Create A Promotion" tab
@@ -99,27 +92,47 @@ Feature: The promotions service back-end
         And I press the "Search" button
         Then I should see the promotion "Winter Sale" between "2024-12-01T00:00:00" and "2024-12-31T23:59:59" in the search results
 
-    Scenario: Updating promotions
-        When I visit the "Home Page"
-        And I switch to the "Update A Promotion" tab
-        And I set the "ID" to "fe0e7528-271e-4e18-b209-4de72cbba141"
-        And I set the "Creator's UUID" to "fe0e7528-271e-4e18-b209-4de72cbba142"
-        And I set the "Updater's UUID" to "fe0e7528-271e-4e18-b209-4de72cbba143"
-        And I set the "Name" to "not_free"
-        And I set the "Description" to "sss"
-        And I set the "Product IDs" to "prod_3"
-        And I set the "Start Date" to "2024-11-12"
-        And I set the "End Date" to "2024-11-25"
-        And I set the "Active Status" to "Inactive"
-        And I press the "Update" button
-        Then I should see the message "Update successful!"
-
-     # TODO: Add sad path for update promotions when fixing backend logic
-
     Scenario: Delete a Promotion
         When I visit the "Home Page"
         And I switch to the "Delete Promotion" tab
-        And I set the "ID" to "550e8400-e29b-41d4-a716-446655440000"
+        And I set the ID with last created UUID
         And I press the "Delete" button
-        Then I should see the message "Promotion has been Deleted!"
+        Then I should see the message "Promotion has been Deleted"
 
+    Scenario: Delete non existed Promotion
+        When I visit the "Home Page"
+        And I switch to the "Delete Promotion" tab
+        And I set the "ID" to "123e4567-e89b-12d3-a456-426614174000"
+        And I press the "Delete" button
+        Then I should see the message "404 Not Found: Promotion with id '123e4567-e89b-12d3-a456-426614174000' was not found."
+
+    Scenario: Updating promotions with Name, Description, End Date
+        When I visit the "Home Page"
+        And I switch to the "Update A Promotion" tab
+        And I set the ID with last created UUID
+        And I press the "Retrieve" button
+        Then I should see the message "Success"
+        When I set the "Name" to "not_free"
+        And I set the "Description" to "sss"
+        And I set the "End Date" to "2024-11-25"
+        And I press the "Update" button
+        Then I should see the message "Update successful!"
+    
+    Scenario: Updating promotions with invalid name value 
+        When I visit the "Home Page"
+        And I switch to the "Update A Promotion" tab
+        And I set the ID with last created UUID
+        And I press the "Retrieve" button
+        Then I should see the message "Success"
+        When I set the "Name" to " "
+        And I set the "Description" to "sss"
+        And I set the "End Date" to "11/25/2024"
+        And I press the "Update" button
+        Then I should see the message "Invalid Promotion: missing name"
+    
+    Scenario: Retrieve a non existed Promotion
+        When I visit the "Home Page"
+        And I switch to the "Update A Promotion" tab
+        And I set the "ID" to "123e4567-e89b-12d3-a456-426614174000"
+        And I press the "Retrieve" button
+        Then I should see the message "404 Not Found: Promotion with id '123e4567-e89b-12d3-a456-426614174000' was not found."
