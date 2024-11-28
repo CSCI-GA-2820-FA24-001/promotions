@@ -124,7 +124,7 @@ $(function () {
         });
 
         ajax.done(function (res) {
-            flash_message("Success")
+            flash_message(`Promotion created successfully. The Promotion ID is ${res.id}`)
         });
 
         ajax.fail(function (res) {

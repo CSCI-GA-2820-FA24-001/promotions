@@ -27,8 +27,8 @@ Feature: The promotions service back-end
         And I set the "Updater's UUID" to "a6fe4a43-dc08-471c-9d33-ebacff755f88"
         And I set the "Additional MetaData" to "{}"
         And I press the "Create" button
-        Then I should see the message "Success"
-
+        Then I should see the message with Promotion created successfully
+        
     Scenario: Creating a Promotion with an Invalid Creator's UUID
         When I visit the "Home Page"
         And I switch to the "Create A Promotion" tab
