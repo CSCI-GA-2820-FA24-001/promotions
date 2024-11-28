@@ -150,11 +150,15 @@ def delete_promotions(promotion_id):
     # Delete the Promotion if it exists
     promotion = Promotion.find(promotion_id)
     if promotion:
-        app.logger.info("Promotion with ID: %d found.", promotion.id)
+        app.logger.info(f"Promotion with ID: {promotion.id} found. Deleting...")
         promotion.delete()
+        app.logger.info(f"Promotion with ID: {promotion_id} deletion complete.")
+        return jsonify({}), status.HTTP_204_NO_CONTENT
 
-    app.logger.info("Promotion with ID: %d delete complete.", promotion_id)
-    return {}, status.HTTP_204_NO_CONTENT
+    abort(
+        status.HTTP_404_NOT_FOUND,
+        f"Promotion with id '{promotion_id}' was not found.",
+    )
 
 
 ######################################################################

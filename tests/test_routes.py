@@ -21,6 +21,7 @@ TestPromotion API Service Test Suite
 # pylint: disable=duplicate-code
 import os
 import logging
+import json
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -32,6 +33,7 @@ from wsgi import app
 from service.common import status
 from service.models import db, Promotion
 from .factories import PromotionFactory
+
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
@@ -334,8 +336,13 @@ class TestPromotionResourceService(TestCase):
         """It should Delete a Promotion even if it doesn't exist"""
         non_existent_id = uuid4()  # Generate a random UUID
         response = self.client.delete(f"{BASE_URL}/{non_existent_id}")
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response_data = json.loads(response.data)
+        expected_message = (
+            f"404 Not Found: Promotion with id '{non_existent_id}' was not found."
+        )
+        self.assertEqual(response_data["message"], expected_message)
 
     # ----------------------------------------------------------
     # TEST INVALID METHODS

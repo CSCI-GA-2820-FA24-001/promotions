@@ -56,14 +56,12 @@ const clearForm = (type) => {
         case 'search':
             $('#searchPromotionForm')[0].reset();
             break;
-        case 'retrieve':
-            $('#retrievePromotionForm')[0].reset();
-            break;
         case 'delete':
             $('#deletePromotionForm')[0].reset();
             break;
         case 'update':
             $('#updatePromotionForm')[0].reset();
+            $('#update_promotion_id').prop('disabled', false);
             break;
         default:
             console.error("Invalid form type specified");
@@ -106,4 +104,22 @@ const toggleActiveState = (type) => {
 
     // Ensure active fields are fully visible
     $(activeInputIDs.join(',')).removeClass('text-muted').css('opacity', 1);
+}
+
+const updateFormData = (promotion, type) => {
+    switch (type) {
+        case 'update-fill':
+            const formPrefix = 'update_promotion_';
+
+            $(`#${formPrefix}name`).val(promotion.name);
+            $(`#${formPrefix}description`).val(promotion.description);
+            $(`#${formPrefix}product_ids`).val(promotion.product_ids.join(', ')); // Assuming product_ids is always an array
+            $(`#${formPrefix}start_date`).val(promotion.start_date.slice(0, 10)); // Adjust to match input date format
+            $(`#${formPrefix}end_date`).val(promotion.end_date.slice(0, 10)); // Adjust to match input date format
+            $(`#${formPrefix}active_status`).val(promotion.active_status.toString());
+            $(`#${formPrefix}extra`).val(promotion.extra ? JSON.stringify(promotion.extra, null) : '');
+            break;
+        default:
+            break;
+    }
 }
