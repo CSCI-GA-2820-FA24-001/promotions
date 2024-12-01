@@ -243,6 +243,22 @@ def step_impl(context, message):
     assert found
 
 
+@then("I should see the message with Promotion created successfully")
+def step_impl(context):
+    element = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.visibility_of_element_located((By.ID, "flash_message"))
+    )
+    text = element.text
+
+    assert text.startswith("Promotion created successfully.")
+
+    promotion_id_text = text.replace(
+        "Promotion created successfully. The Promotion ID is ", ""
+    ).strip()
+
+    assert len(promotion_id_text) > 0
+
+
 ##################################################################
 # This code works because of the following naming convention:
 # The id field for text input in the html is the element name
