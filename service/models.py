@@ -22,6 +22,10 @@ class DataValidationError(Exception):
     """Used for an data validation errors when deserializing"""
 
 
+class DatabaseConnectionError(Exception):
+    """Custom Exception when database connection fails"""
+
+
 class Promotion(db.Model):
     """
     Represents a promotion for products, including details like name, start and end dates,

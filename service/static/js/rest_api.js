@@ -1,3 +1,6 @@
+const BASE_URL = "/api/promotions"
+
+
 $(function () {
     // ****************************************
     //  U T I L I T Y   F U N C T I O N S
@@ -14,7 +17,7 @@ $(function () {
         let action = newStatus ? "activate" : "deactivate";
         $.ajax({
             type: "PATCH",
-            url: `/promotions/${promotionId}/${action}`,
+            url: `${BASE_URL}/${promotionId}/${action}`,
             contentType: "application/json",
             data: JSON.stringify({ active_status: newStatus }),
             success: function () {
@@ -118,7 +121,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "POST",
-            url: "/promotions",
+            url: BASE_URL,
             contentType: "application/json",
             data: JSON.stringify(data),
         });
@@ -147,7 +150,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "GET",
-            url: `/promotions/${promotion_id}`,
+            url: `${BASE_URL}/${promotion_id}`,
             contentType: "application/json",
             data: ''
         })
@@ -233,7 +236,7 @@ $(function () {
 
         console.log('data', data);
 
-        const baseUrl = id ? `/promotions/${id}` : '/promotions';
+        const baseUrl = id ? `${BASE_URL}/${id}` : BASE_URL;
         const queryString = id ? '' : $.param(data);  // Only add query string if not searching by ID
 
 
@@ -307,7 +310,7 @@ $(function () {
         $("#flash_message").empty();
         let ajax = $.ajax({
             type: "PUT",
-            url: `/promotions/${promotion_id}`,
+            url: `${BASE_URL}/${promotion_id}`,
             contentType: "application/json",
             data: JSON.stringify(data)
         });
@@ -335,7 +338,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "DELETE",
-            url: `/promotions/${promotion_id}`,
+            url: `${BASE_URL}/${promotion_id}`,
             contentType: "application/json",
         });
 

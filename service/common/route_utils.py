@@ -1,7 +1,5 @@
 # import uuid
-from flask import request, abort
 from flask import current_app as app  # Import Flask application
-from service.common import status  # HTTP Status Codes
 from datetime import datetime
 from dateutil.parser import parse, ParserError
 
@@ -9,24 +7,6 @@ from dateutil.parser import parse, ParserError
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
-
-
-######################################################################
-# Checks the ContentType of a request (same function as prof's example)
-######################################################################
-def check_content_type(content_type) -> None:
-    """Checks that the media type is correct"""
-    if request.headers.get("Content-Type", "") == content_type:
-        return
-
-    app.logger.error(
-        "Invalid Content-Type: %s",
-        request.headers.get("Content-Type", "Content-Type not set"),
-    )
-    abort(
-        status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-        f"Content-Type must be {content_type}",
-    )
 
 
 def parse_with_try(date: str | None) -> datetime | None:

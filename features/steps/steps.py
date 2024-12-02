@@ -33,13 +33,15 @@ HTTP_204_NO_CONTENT = 204
 
 WAIT_TIMEOUT = 60
 
+PROMOTIONS_API_ENDPOINT = "api/promotions"
+
 
 @given("the following promotions")
 def step_impl(context):
     """Delete all promotions and load new ones"""
 
     # Get a list all of the promotions
-    rest_endpoint = f"{context.base_url}/promotions"
+    rest_endpoint = f"{context.base_url}/{PROMOTIONS_API_ENDPOINT}"
     context.resp = requests.get(rest_endpoint, timeout=WAIT_TIMEOUT)
     expect(context.resp.status_code).equal_to(HTTP_200_OK)
     # and delete them one by one

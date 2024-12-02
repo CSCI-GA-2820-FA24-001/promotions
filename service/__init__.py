@@ -20,6 +20,7 @@ and SQL database
 """
 import sys
 from flask import Flask
+from flask_restx import Api
 from service import config
 from service.common import log_handlers
 
@@ -29,13 +30,18 @@ from service.common import log_handlers
 ############################################################
 def create_app():
     """Initialize the core application."""
+
     # Create Flask application
     app = Flask(__name__)
     app.config.from_object(config)
 
+    # Turn off strict slashes because it violates best practices
+    app.url_map.strict_slashes = False
+
     # Initialize Plugins
     # pylint: disable=import-outside-toplevel
     from service.models import db
+
     db.init_app(app)
 
     with app.app_context():
