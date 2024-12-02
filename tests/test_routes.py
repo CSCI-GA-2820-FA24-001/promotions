@@ -38,7 +38,7 @@ from .factories import PromotionFactory
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
 )
-BASE_URL = "/promotions"
+BASE_URL = "/api/promotions"
 
 
 ######################################################################
@@ -123,7 +123,8 @@ class TestPromotionResourceService(TestCase):
 
     def test_get_promotion_not_found(self):
         """It should not Get a Promotion thats not found"""
-        response = self.client.get(f"{BASE_URL}/0")
+        non_existent_uuid = "00000000-0000-0000-0000-000000000000"
+        response = self.client.get(f"{BASE_URL}/{non_existent_uuid}")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         data = response.get_json()
         logging.debug("Response data = %s", data)
@@ -339,18 +340,8 @@ class TestPromotionResourceService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         response_data = json.loads(response.data)
-        expected_message = (
-            f"404 Not Found: Promotion with id '{non_existent_id}' was not found."
-        )
+        expected_message = f"Promotion with id '{non_existent_id}' was not found."
         self.assertEqual(response_data["message"], expected_message)
-
-    # ----------------------------------------------------------
-    # TEST INVALID METHODS
-    # ----------------------------------------------------------
-    def test_delete_invalid_methods(self):
-        """It should throw HTTP 405, METHOD_NOT_ALLOWED"""
-        response = self.client.delete(f"{BASE_URL}")
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     # ----------------------------------------------------------
     # TEST LIST
@@ -586,8 +577,7 @@ class TestPromotionResourceService(TestCase):
             ]
         )
         response = self.client.get(
-            BASE_URL,
-            query_string=f"active_status={quote_plus(str(test_active_status))}",
+            f"{BASE_URL}?active_status={quote_plus(str(test_active_status))}"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()

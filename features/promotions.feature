@@ -104,7 +104,7 @@ Feature: The promotions service back-end
         And I switch to the "Delete Promotion" tab
         And I set the "ID" to "123e4567-e89b-12d3-a456-426614174000"
         And I press the "Delete" button
-        Then I should see the message "404 Not Found: Promotion with id '123e4567-e89b-12d3-a456-426614174000' was not found."
+        Then I should see the message "Promotion with id '123e4567-e89b-12d3-a456-426614174000' was not found."
 
     Scenario: Updating promotions with Name, Description, End Date
         When I visit the "Home Page"
@@ -135,4 +135,4 @@ Feature: The promotions service back-end
         And I switch to the "Update A Promotion" tab
         And I set the "ID" to "123e4567-e89b-12d3-a456-426614174000"
         And I press the "Retrieve" button
-        Then I should see the message "404 Not Found: Promotion with id '123e4567-e89b-12d3-a456-426614174000' was not found."
+        Then I should see the message "Promotion with id '123e4567-e89b-12d3-a456-426614174000' was not found."
