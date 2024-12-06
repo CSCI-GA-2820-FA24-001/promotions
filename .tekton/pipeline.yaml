@@ -17,7 +17,7 @@ spec:
     - name: APP_NAME
       description: Name of the application
       type: string
-      default: petshop
+      default: promotions
     - name: IMAGE_NAME
       description: The name of the image to build
       type: string
