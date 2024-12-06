@@ -92,15 +92,15 @@ spec:
       type: array
       default: []
     - name: secret-name
-      description: The name of the secret containing a database_uri key
+      description: The name of the secret containing a database-uri key
       type: string
       default: "postgres-creds"
     - name: secret-key
       description: The name of the key that contains the database uri
       type: string
-      default: "database_uri"
+      default: "database-uri"
   steps:
-    - name: pytest
+    - name: pytest-env
       image: docker.io/python:3.11-slim
       workingDir: $(workspaces.source.path)
       env:
