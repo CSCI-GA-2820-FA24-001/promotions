@@ -156,7 +156,6 @@ spec:
   - name: image-name
     description: The fully qualified name of the new image to deploy
     type: string
-    default: $(params.IMAGE_NAME)
   - name: manifest-dir
     description: The directory in source that contains yaml manifests
     type: string
@@ -180,9 +179,9 @@ spec:
           chmod a+x /usr/bin/yq
 
           echo "*********************  DEPLOYMENT  ***********************"
-          echo "Deploying $(inputs.params.IMAGE_NAME) ..."
+          echo "Deploying $(inputs.params.image-name) ..."
 
-          yq -e -i '.spec.template.spec.containers[0].image="$(inputs.params.IMAGE_NAME)"' $(inputs.params.manifest-dir)/deployment.yaml
+          yq -e -i '.spec.template.spec.containers[0].image="$(inputs.params.image-name)"' $(inputs.params.manifest-dir)/deployment.yaml
           cat $(inputs.params.manifest-dir)/deployment.yaml
 
           echo "************************************************************"

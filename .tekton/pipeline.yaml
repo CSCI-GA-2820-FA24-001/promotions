@@ -134,7 +134,7 @@ spec:
           workspace: pipeline-workspace
     - name: deploy-image
       params:
-        - name: IMAGE_NAME
+        - name: image-name
           value: $(params.IMAGE_NAME)
         - name: manifest-dir
           value: k8s
