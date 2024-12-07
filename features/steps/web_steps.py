@@ -250,6 +250,7 @@ def step_impl(context):
     )
     text = element.text
 
+    context.logger.info(f"~~~~~~~~This is Promotion created successfully Text: {text}")
     assert text.startswith("Promotion created successfully.")
 
     promotion_id_text = text.replace(

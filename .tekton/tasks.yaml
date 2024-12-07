@@ -98,7 +98,7 @@ spec:
     - name: secret-key
       description: The name of the key that contains the database uri
       type: string
-      default: "database_uri"
+      default: "database-uri"
   steps:
     - name: pytest
       image: docker.io/python:3.11-slim
@@ -285,4 +285,4 @@ spec:
         python -m pip install --user -r requirements.txt
 
         echo "***** Running Tests *****"
-        behave
+        behave --no-capture --no-logcapture --format plain

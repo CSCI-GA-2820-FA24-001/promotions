@@ -16,6 +16,10 @@ def before_all(context):
     context.base_url = BASE_URL
     context.wait_seconds = WAIT_SECONDS
 
+    context.config.stdout_capture = False
+    context.config.stderr_capture = False
+    context.config.format = "plain"
+
     # Setup logging
     setup_logging(context)
 
