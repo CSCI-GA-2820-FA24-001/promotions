@@ -92,15 +92,15 @@ spec:
       type: array
       default: []
     - name: secret-name
-      description: The name of the secret containing a database-uri key
+      description: The name of the secret containing a database_uri key
       type: string
       default: "postgres-creds"
     - name: secret-key
       description: The name of the key that contains the database uri
       type: string
-      default: "database-uri"
+      default: "database_uri"
   steps:
-    - name: pytest-env
+    - name: pytest
       image: docker.io/python:3.11-slim
       workingDir: $(workspaces.source.path)
       env:
@@ -156,7 +156,7 @@ spec:
   - name: image-name
     description: The fully qualified name of the new image to deploy
     type: string
-    default: "$(params.image-name)"
+    default: $(params.IMAGE_NAME)
   - name: manifest-dir
     description: The directory in source that contains yaml manifests
     type: string
@@ -180,9 +180,9 @@ spec:
           chmod a+x /usr/bin/yq
 
           echo "*********************  DEPLOYMENT  ***********************"
-          echo "Deploying $(inputs.params.image-name) ..."
+          echo "Deploying $(inputs.params.IMAGE_NAME) ..."
 
-          yq -e -i '.spec.template.spec.containers[0].image="$(inputs.params.image-name)"' $(inputs.params.manifest-dir)/deployment.yaml
+          yq -e -i '.spec.template.spec.containers[0].image="$(inputs.params.IMAGE_NAME)"' $(inputs.params.manifest-dir)/deployment.yaml
           cat $(inputs.params.manifest-dir)/deployment.yaml
 
           echo "************************************************************"
