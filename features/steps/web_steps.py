@@ -77,7 +77,27 @@ def step_impl(context, element_name, text_string):
     )
     element = context.driver.find_element(By.ID, element_id)
 
-    if element_name == "Active Status":
+    if "Date" in element_name:
+        try:
+            # Handle ISO 8601 format (e.g., "2024-12-01T00:00:00")
+            if "T" in text_string:
+                date_string, time_string = text_string.split("T")
+                # Convert date part to Chrome-compatible MM/DD/YYYY format
+                parsed_date = datetime.strptime(date_string, "%Y-%m-%d")
+                formatted_date = parsed_date.strftime("%m/%d/%Y")
+                formatted_input = f"{formatted_date}T{time_string}"
+            else:
+                # Convert full date to MM/DD/YYYY format if no time part exists
+                parsed_date = datetime.strptime(text_string, "%Y-%m-%d")
+                formatted_input = parsed_date.strftime("%m/%d/%Y")
+        except ValueError as exc:
+            raise ValueError(
+                f"Invalid date format for {text_string}. Expected format: YYYY-MM-DD."
+            ) from exc
+        # Clear and send formatted date to the element
+        element.clear()
+        element.send_keys(formatted_input)
+    elif element_name == "Active Status":
         select = Select(element)
         if text_string == "Active":
             select.select_by_value("true")
