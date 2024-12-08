@@ -126,7 +126,7 @@ Feature: The promotions service back-end
         Then I should see the message "Success"
         When I set the "Name" to " "
         And I set the "Description" to "sss"
-        And I set the "End Date" to "11/25/2024"
+        And I set the "End Date" to "2024-11-25"
         And I press the "Update" button
         Then I should see the message "Invalid Promotion: missing name"
     
