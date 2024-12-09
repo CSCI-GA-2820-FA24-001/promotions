@@ -1,5 +1,5 @@
-# The petstore database should be created for you, if not here is the command:
-# psql -c "create database petstore;" -U postgres
+# The postgres_db database should be created for you, if not here is the command:
+# psql -c "create database postgres_db;" -U postgres
 ---
 apiVersion: apps/v1
 kind: StatefulSet

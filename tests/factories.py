@@ -10,7 +10,7 @@ PROMOTION_DURATION_DAYS = 30
 
 
 class PromotionFactory(factory.Factory):
-    """Creates fake pets that you don't have to feed"""
+    """Creates fake promotions that you don't have to manage"""
 
     class Meta:  # pylint: disable=too-few-public-methods
         """Maps factory to data model"""
