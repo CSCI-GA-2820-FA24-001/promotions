@@ -246,6 +246,7 @@ $(function () {
             contentType: "application/json",
         });
 
+        renderPromotionData([], 'promotion-data');
         ajax.done(function (res) {
             if (!Array.isArray(res)) {
                 res = [res]; // Wrap the single object in an array
