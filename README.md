@@ -5,11 +5,17 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://python.org/)
 
-This is a skeleton you can use to start your projects
+The Promotions Microservice is part of an eCommerce backend designed to provide RESTful services for managing product promotions. It supports full CRUD operations and advanced functionalities like querying and custom actions.
 
 ## Overview
 
-This project template contains starter code for your class project. The `/service` folder contains your `models.py` file for your model and a `routes.py` file for your service. The `/tests` folder has test case starter code for testing the model and the service separately. All you need to do is add your functionality. You can use the [lab-flask-tdd](https://github.com/nyu-devops/lab-flask-tdd) for code examples to copy from.
+This project follows the Model-View-Controller (MVC) design pattern:
+
+- Model (models.py): Handles the business logic for Promotions.
+- View (routes.py): Exposes the RESTful API endpoints.
+- Controller: Combined logic between service routes and database operations.
+
+All functionality is supported by extensive test coverage (>95%) to ensure reliability during development and deployment.
 
 ## Introduction
 
@@ -46,6 +52,9 @@ The project contains the following:
 .devcontainers/     - Folder with support for VSCode Remote Containers
 dot-env-example     - copy to .env to use environment variables
 pyproject.toml      - Poetry list of Python libraries required by your code
+.github             - Include issue/user stories template and CI workflow
+.tekton             - YAML files to create and run continuous integration and continuous delivery (CI/CD) pipelines
+k8s                 - Kubernetes configuration files, used to manage and deploy applications on a Kubernetes cluster.
 
 service/                   - service python package
 ├── __init__.py            - package initializer
@@ -57,6 +66,7 @@ service/                   - service python package
     ├── error_handlers.py  - HTTP error handling code
     ├── log_handlers.py    - logging setup code
     └── status.py          - HTTP status constants
+└── statics                - Front end code
 
 tests/                     - test cases package
 ├── __init__.py            - package initializer
@@ -66,66 +76,26 @@ tests/                     - test cases package
 └── test_routes.py         - test suite for service routes
 ```
 
-## API Endpoints
+## API Documentation
 
-### Root Route (`/`)
+The service uses Flask-RESTX to provide Swagger UI for API documentation. Access it at:
 
-#### Description
+- URL: /api/apidocs/
 
-The root route provides metadata and basic information about the Promotion Service, such as its name, version, and the main endpoint. It serves as an entry point to verify that the API is accessible. This route can be used as a simple health check to ensure that the service is running properly.
+### Key Features
 
-#### HTTP Method
+#### Promotions
 
--   `GET`
+- Create: `POST /api/promotions`
+- Read: `GET /api/promotions/<promotion_id>`
+- Update: `PUT /api/promotions/<promotion_id>`
+- Delete: `DELETE /api/promotions/<promotion_id>`
+- List: `GET /api/promotions`
 
-#### Example Request
+#### Health Check
 
-`GET /` 
-
-#### Response
-
--   **Status Code**: `200 OK`
--   **Content Type**: `application/json`
--   **Response Body**:
- 
-    `{
-      "service_name": "Promotion Service",
-      "version": "v1.0",
-      "endpoint": "/promotions"
-    }` 
-
-### Create a Promotion
-- **URL**: `/promotions`
-- **Method**: `POST`
-- **Description**: Creates a new promotion.
--   **Response**: Returns the created promotion details with a unique promotion ID.
-
-### Read a Promotion
-
--   **URL**: `/promotions/<promotion_id>`
--   **Method**: `GET`
--   **Description**: Retrieves details of a specific promotion by its ID.
-- **Response**: Returns the detailed information about the specific promotion being requested.
-### Update a Promotion
-
--   **URL**: `/promotions/<promotion_id>`
--   **Method**: `PUT`
--   **Description**: Updates an existing promotion.
--   **Response**: Returns the updated promotion details.
-
-### Delete a Promotion
-
--   **URL**: `/promotions/<promotion_id>`
--   **Method**: `DELETE`
--   **Description**: Deletes a promotion by its ID.
--   **Response**: Returns a success message.
-
-### List Promotions
-
--   **URL**: `/promotions`
--   **Method**: `GET`
--   **Description**: Lists all existing promotions.
--   **Response**: Returns an array of promotion objects.
+- Endpoint: `/health`
+- Response: `{"status": "OK"}`
 
 
 ## Running the tests
@@ -188,7 +158,142 @@ make run
 
 You should be able to reach the service at: http://0.0.0.0:8080. The port that is used is controlled by an environment variable defined in the `.flaskenv` file which Flask uses to load it's configuration from the environment by default.
 
-Test for webhook
+
+## Behavior-Driven Development (BDD)
+
+Behavior-Driven Development (BDD) is implemented to test the application from the end-user's perspective. It ensures that the service behaves as expected when accessed through its UI. Tests are written in Gherkin syntax and executed using `behave` with Selenium.
+
+---
+
+### BDD Features
+
+The BDD tests validate the following operations:
+1. **Create a Promotion**: Verify that new promotions can be added through the UI.
+2. **Read a Promotion**: Ensure that promotion details can be viewed.
+3. **Update a Promotion**: Test that existing promotions can be updated.
+4. **Delete a Promotion**: Confirm that promotions can be removed.
+5. **List Promotions**: Verify that all promotions are displayed in the UI.
+6. **Query Promotions**: Test the ability to filter promotions by specific criteria.
+7. **Action on Promotions**: Validate custom actions defined for promotions.
+
+---
+
+### Running BDD Tests
+
+To execute the BDD tests:
+
+   ```bash
+   behave
+   ```
+
+## Kubernetes Deployment
+
+This microservice is deployed to a Kubernetes cluster using the manifests provided in the `k8s/` directory.
+
+### Local Deployment Setup
+
+To deploy the application locally, follow these steps:
+
+#### Step 1: Create the Kubernetes Cluster
+
+Create the Kubernetes Cluster:
+
+```bash
+make cluster
+```
+
+#### Step 2: Build and Prepare the Docker Image
+
+If you haven’t already built the Docker image for the application, or if you need to update it, follow these steps:
+
+1. **Build the Docker Image**:
+   Navigate to the directory containing your `Dockerfile` and run:
+
+     ```bash
+    docker build -t promotions:latest .
+     ```
+
+2. **Verify Build Status**:
+   Check Existing Docker Images To verify the image was built successfully or check if it already exists, use:
+
+     ```bash
+    docker images
+    ```
+
+3. **Tag and Push the Docker Image**:
+     ```bash
+    docker tag promotions:latest cluster-registry:5000/promotions:latest
+    docker push cluster-registry:5000/promotions:latest
+    ```
+
+4. **Deploy PostgreSQL and Application Resources**:
+     ```bash
+    kubectl apply -f k8s/postgresql/
+    kubectl apply -f k8s/
+    ```
+
+5. **Verify the Deployment**:
+     ```bash
+    kubectl get pods
+    ```
+
+6. **Access the application** at:
+     ```bash
+    http://localhost:8080
+    ```
+
+### Kubernetes Manifests
+
+The `k8s/` directory contains the necessary manifests for deploying the microservice and its database:
+
+- **Application Deployment**:
+  - `deployment.yaml`: Configures the application deployment.
+  - `service.yaml`: Exposes the application as a Kubernetes service.
+  - `ingress.yaml`: Configures ingress routing to expose the service externally.
+
+- **Database Deployment**:
+  - `postgres/`:
+    - `statefulset.yaml`: Deploys PostgreSQL as a StatefulSet.
+    - `service.yaml`: Exposes the database as a service.
+
+
+
+## Continuous Integration and Deployment
+
+### CI with GitHub Actions
+
+Continuous Integration is implemented using GitHub Actions, ensuring that every push to the `master` branch or pull request is validated for quality and functionality. The following steps are automated:
+
+1. **Linting**: Code is checked for style and quality issues using `flake8` and `pylint`.
+2. **Unit Tests**: All unit tests are executed with `pytest`.
+3. **Code Coverage**: The codebase is analyzed to ensure a minimum of 95% test coverage.
+
+The results of these checks are displayed directly in pull requests, and the repository includes badges for build status and code coverage.
+
+### CD to Kubernetes
+
+Continuous Deployment is automated using a Tekton pipeline. The pipeline is triggered on successful CI completion and performs the following:
+
+1. **Build a Docker Image**
+2. **Deploy to Kubernetes**
+3. **Run BDD Tests**
+
+### GitHub Actions Workflow
+
+The CI/CD workflow is defined in `.github/workflows/ci.yml`. Key features include:
+- Linting and code quality checks.
+- Unit tests with coverage reporting.
+- Integration with Codecov for test coverage metrics.
+- Notifications of build status directly in GitHub.
+
+### Pipeline Status
+
+The build and deployment status is visible through the following badges:
+
+- **Build Status**: ![CI Build](https://github.com/CSCI-GA-2820-FA24-001/promotions/actions/workflows/ci.yml/badge.svg)
+- **Code Coverage**: ![codecov](https://codecov.io/gh/CSCI-GA-2820-FA24-001/promotions/graph/badge.svg?token=Z3A4UWCWVY)
+
+
 
 ## License
 
