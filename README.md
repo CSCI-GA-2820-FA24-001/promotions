@@ -190,35 +190,58 @@ To execute the BDD tests:
 
 This microservice is deployed to a Kubernetes cluster using the manifests provided in the `k8s/` directory.
 
-### Local Development Setup
+### Local Deployment Setup
 
 To deploy the application locally, follow these steps:
 
-1. **Create a Kubernetes Cluster**:
-   - Use `K3s` or `Minikube` to set up a local cluster.
-   - Run the following command to create the cluster:
+#### Step 1: Create the Kubernetes Cluster
+
+Create the Kubernetes Cluster:
+
+```bash
+make cluster
+```
+
+#### Step 2: Build and Prepare the Docker Image
+
+If you haven’t already built the Docker image for the application, or if you need to update it, follow these steps:
+
+1. **Build the Docker Image**:
+   Navigate to the directory containing your `Dockerfile` and run:
+
      ```bash
-     make cluster
+    docker build -t promotions:latest .
      ```
 
-2. **Deploy Application and Database**:
-   - Apply the Kubernetes manifests:
-     ```bash
-     kubectl apply -f k8s/
-     ```
+2. **Verify Build Status**:
+   Check Existing Docker Images To verify the image was built successfully or check if it already exists, use:
 
-3. **Verify Deployment**:
-   - Check the status of Kubernetes resources:
      ```bash
-     kubectl get all
-     ```
-   - Ensure that pods are in the `Running` state and services are available.
+    docker images
+    ```
 
-4. **Access the Application Using Ingress**:
-   - Access the application at:
-     ```
-     http://localhost:8080
-     ```
+3. **Tag and Push the Docker Image**:
+     ```bash
+    docker tag promotions:latest cluster-registry:5000/promotions:latest
+    docker push cluster-registry:5000/promotions:latest
+    ```
+
+4. **Deploy PostgreSQL and Application Resources**:
+     ```bash
+    kubectl apply -f k8s/postgresql/
+    kubectl apply -f k8s/
+    ```
+
+5. **Verify the Deployment**:
+     ```bash
+    kubectl get pods
+    ```
+
+6. **Access the application** at:
+     ```bash
+    http://localhost:8080
+    ```
+
 ### Kubernetes Manifests
 
 The `k8s/` directory contains the necessary manifests for deploying the microservice and its database:
